@@ -1,0 +1,16 @@
+application: box2d-javascript-fun
+version: 1
+runtime: python
+api_version: 1
+
+#default_expiration: "30d"
+
+handlers:
+    
+- url: (.*)/
+  static_files: static\1/index.html
+  upload: static/index.html
+
+- url: /
+  static_dir: static
+  
