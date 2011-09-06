@@ -9,12 +9,13 @@
       float: left;
     }
     </style>
-    <script src="../Box2d.min.js"></script>
+    <script src="../stats.js"></script>
+    <script src="../Box2D.js"></script>
   </head>
   <body>
-    <div class="box" id="sim-1">
+    <div class="box" id="sim0">
      <div>
-       <canvas width="640" height="480" style="border: 1px solid black"></canvas>
+       <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
      </div>
      <div>
       FPS: <input type="range" min="1" max="60" class="fps" value="60"> <output class="fps-output">60</output>
@@ -27,9 +28,9 @@
      </div>
     </div>
     
-    <div class="box" id="sim-2">
+    <div class="box" id="sim1">
      <div>
-       <canvas width="640" height="480" style="border: 1px solid black"></canvas>
+       <canvas id="c1" width="640" height="480" style="border: 1px solid black"></canvas>
      </div>
      <div>
       FPS: <input type="range" min="1" max="60" class="fps" value="30"> <output class="fps-output">30</output>
@@ -40,6 +41,10 @@
      <div>
       Adaptive Step Freq: <input type="checkbox" class="adaptive-step-freq">
      </div>
+    </div>
+    
+    <div style="clear:both;padding-top: 20px">
+      <button id="start-sim" style="width: 300px; display:block; margin-left: auto; margin-right: auto">Start Sim</button>
     </div>
     
     <script>
@@ -75,7 +80,7 @@
     linkInputOutput("fps");
     linkInputOutput("step-freq");
     
-    (function () {
+    (function() {
       var adaptives = document.querySelectorAll("input.adaptive-step-freq");
       for (var i = 0; i < adaptives.length; i++) {
         adaptives[i].addEventListener("change", function(e) {
@@ -91,112 +96,138 @@
         });
       }
     })();
+    
+    (function() {
+      var startButton = document.getElementById("start-sim");
+      var bs = [];
+      startButton.addEventListener("click", function() {
+        var boxes = document.querySelectorAll("div.box");
+        for (var i = 0; i < boxes.length; i++) {
+          var stepRate = boxes[i].querySelector("input.step-freq").value;
+          var frameRate = boxes[i].querySelector("input.fps").value;
+          var adaptive = boxes[i].querySelector("input.adaptive-step-freq").checked;
+          if (bs[i]) bs[i].kill();
+          bs[i] = new bTest("c" + i, stepRate, frameRate, adaptive);
+        }
+      });
+    })();
     </script>
     
     <script>
+    
+    var   b2Vec2 = Box2D.Common.Math.b2Vec2
+     , b2BodyDef = Box2D.Dynamics.b2BodyDef
+     , b2Body = Box2D.Dynamics.b2Body
+     , b2FixtureDef = Box2D.Dynamics.b2FixtureDef
+     , b2Fixture = Box2D.Dynamics.b2Fixture
+     , b2World = Box2D.Dynamics.b2World
+     , b2MassData = Box2D.Collision.Shapes.b2MassData
+     , b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
+     , b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
+     , b2DebugDraw = Box2D.Dynamics.b2DebugDraw
+       ;
   
-    var bTest = function(canvasId, intervalRate, frameRate, adaptive) {
+    function bTest(canvasId, intervalRate, frameRate, adaptive) {
+      this.canvasElem = document.getElementById(canvasId);
+      this.stats = new Stats();
+      this.canvasElem.parentNode.appendChild(this.stats.domElement);
       
-      if (typeof(adaptive) === 'undefined') adaptive = false;
-      var lastTimestamp = Date.now();
+      this.canvasId = canvasId;
+      this.intervalRate = parseInt(intervalRate);
+      this.frameRate = parseInt(frameRate);
+      this.adaptive = adaptive;
       
-      var world;
+      this.killed = false;
+      this.lastTimestamp = Date.now();
       
-      function scheduleNextFrame() {
-        var iRate = intervalRate;
-        if (intervalRate === 0) {
-          iRate = 60 - Math.ceil(Math.random()*20);
-        }
-        setTimeout(update, 1000 / iRate);
+      this.world = new b2World(
+            new b2Vec2(0, 10)    //gravity
+         ,  true                 //allow sleep
+      );
+    
+      var SCALE = 30;
+  
+      this.fixDef = new b2FixtureDef;
+      this.fixDef.density = 1.0;
+      this.fixDef.friction = 0.5;
+      this.fixDef.restitution = 0.2;
+  
+      this.bodyDef = new b2BodyDef;
+  
+      //create ground
+      this.bodyDef.type = b2Body.b2_staticBody;
+    
+      // positions the center of the object (not upper left!)
+      this.bodyDef.position.x = 640 / 2 / SCALE;
+      this.bodyDef.position.y = 480 / SCALE;
+    
+      this.fixDef.shape = new b2PolygonShape;
+    
+      // half width, half height. eg actual height here is 1 unit
+      this.fixDef.shape.SetAsBox((600 / SCALE) / 2, (10/SCALE) / 2);
+      this.world.CreateBody(this.bodyDef).CreateFixture(this.fixDef);
+  
+      //create some objects
+      this.bodyDef.type = b2Body.b2_dynamicBody;
+      for(var i = 0; i < 10; ++i) {
+         if(Math.random() > 0.5) {
+            this.fixDef.shape = new b2PolygonShape;
+            this.fixDef.shape.SetAsBox(
+                  Math.random() + 0.1 //half width
+               ,  Math.random() + 0.1 //half height
+            );
+         } else {
+            this.fixDef.shape = new b2CircleShape(
+               Math.random() + 0.1 //radius
+            );
+         }
+         this.bodyDef.position.x = Math.random() * 25;
+         this.bodyDef.position.y = Math.random() * 10;
+         this.world.CreateBody(this.bodyDef).CreateFixture(this.fixDef);
       }
   
-      function init() {
-         var   b2Vec2 = Box2D.Common.Math.b2Vec2
-          , b2BodyDef = Box2D.Dynamics.b2BodyDef
-          , b2Body = Box2D.Dynamics.b2Body
-          , b2FixtureDef = Box2D.Dynamics.b2FixtureDef
-          , b2Fixture = Box2D.Dynamics.b2Fixture
-          , b2World = Box2D.Dynamics.b2World
-          , b2MassData = Box2D.Collision.Shapes.b2MassData
-          , b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape
-          , b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
-          , b2DebugDraw = Box2D.Dynamics.b2DebugDraw
-            ;
-     
-         world = new b2World(
-               new b2Vec2(0, 10)    //gravity
-            ,  true                 //allow sleep
-         );
-       
-         var SCALE = 30;
-     
-         var fixDef = new b2FixtureDef;
-         fixDef.density = 1.0;
-         fixDef.friction = 0.5;
-         fixDef.restitution = 0.2;
-     
-         var bodyDef = new b2BodyDef;
-     
-         //create ground
-         bodyDef.type = b2Body.b2_staticBody;
-       
-         // positions the center of the object (not upper left!)
-         bodyDef.position.x = 640 / 2 / SCALE;
-         bodyDef.position.y = 480 / SCALE;
-       
-         fixDef.shape = new b2PolygonShape;
-       
-         // half width, half height. eg actual height here is 1 unit
-         fixDef.shape.SetAsBox((600 / SCALE) / 2, (10/SCALE) / 2);
-         world.CreateBody(bodyDef).CreateFixture(fixDef);
-     
-         //create some objects
-         bodyDef.type = b2Body.b2_dynamicBody;
-         for(var i = 0; i < 10; ++i) {
-            if(Math.random() > 0.5) {
-               fixDef.shape = new b2PolygonShape;
-               fixDef.shape.SetAsBox(
-                     Math.random() + 0.1 //half width
-                  ,  Math.random() + 0.1 //half height
-               );
-            } else {
-               fixDef.shape = new b2CircleShape(
-                  Math.random() + 0.1 //radius
-               );
-            }
-            bodyDef.position.x = Math.random() * 25;
-            bodyDef.position.y = Math.random() * 10;
-            world.CreateBody(bodyDef).CreateFixture(fixDef);
-         }
-     
-         //setup debug draw
-         var debugDraw = new b2DebugDraw();
-         debugDraw.SetSprite(document.getElementById(canvasId).getContext("2d"));
-         debugDraw.SetDrawScale(SCALE);
-         debugDraw.SetFillAlpha(0.3);
-         debugDraw.SetLineThickness(1.0);
-         debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
-         world.SetDebugDraw(debugDraw);
-     
-         scheduleNextFrame();
-      }; // init()
-      
-      function update() {
-        var now = Date.now();
-        var stepRate = (adaptive) ? (now - lastTimestamp) / 1000 : (1 / frameRate);
-        lastTimestamp = now;
-         world.Step(
-               stepRate   //frame-rate
-            ,  10       //velocity iterations
-            ,  10       //position iterations
-         );
-         world.DrawDebugData();
-         world.ClearForces();
-         scheduleNextFrame();
-      }; // update()
+      //setup debug draw
+      this.debugDraw = new b2DebugDraw();
+      this.debugDraw.SetSprite(this.canvasElem.getContext("2d"));
+      this.debugDraw.SetDrawScale(SCALE);
+      this.debugDraw.SetFillAlpha(0.3);
+      this.debugDraw.SetLineThickness(1.0);
+      this.debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+      this.world.SetDebugDraw(this.debugDraw);
   
-      init();
-    };
+      var that = this;
+      (function loop() {
+        var diff = Date.now() - that.lastTimestamp;
+        if (that.frameRate === 60 || (diff) > ((900.0/that.frameRate))) {
+          that.update();
+        }
+        if (!that.killed) {
+          requestAnimFrame(loop);
+        } else {
+          console.log("killed " + that.canvasId);
+        }
+      })();
+    }
+    
+    bTest.prototype.update = function() {
+      var now = Date.now();
+      var stepRate = (this.adaptive) ? (now - this.lastTimestamp) / 1000 : (1 / this.intervalRate);
+      this.lastTimestamp = now;
+      this.world.Step(
+             stepRate   //frame-rate
+          ,  10       //velocity iterations
+          ,  10       //position iterations
+       );
+       this.world.DrawDebugData();
+       this.world.ClearForces();
+       this.stats.update();
+    }
+    
+    bTest.prototype.kill = function() {
+      this.killed = true;
+      var s = this.canvasElem.parentNode.querySelector("div.stats");
+      this.canvasElem.parentNode.removeChild(s);
+    }
     </script>
   </body>
 </html>
