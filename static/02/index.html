@@ -18,7 +18,7 @@
        <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
      </div>
      <div>
-      FPS: <input type="range" min="1" max="60" class="fps" value="60"> <output class="fps-output">60</output>
+      FPS (zero for "random"): <input type="range" min="0" max="60" class="fps" value="60"> <output class="fps-output">60</output>
      </div>
      <div>
       Step Freq: <input type="range" min="1" max="60" class="step-freq" value="60"> <output class="step-freq-output">60</output>
@@ -33,7 +33,7 @@
        <canvas id="c1" width="640" height="480" style="border: 1px solid black"></canvas>
      </div>
      <div>
-      FPS: <input type="range" min="1" max="60" class="fps" value="30"> <output class="fps-output">30</output>
+      FPS (zero for "random"): <input type="range" min="0" max="60" class="fps" value="30"> <output class="fps-output">30</output>
      </div>
      <div>
       Step Freq: <input type="range" min="1" max="60" class="step-freq" value="30"> <output class="step-freq-output">30</output>
@@ -71,7 +71,11 @@
           if (e.target.disabled) {
             output.value = '';
           } else {
-            output.value = e.target.value;
+            if (e.target.value === '0') {
+              output.value = 'RANDOM';
+            } else {
+              output.value = e.target.value;
+            }
           }
         });
       }
@@ -137,6 +141,12 @@
       this.frameRate = parseInt(frameRate);
       this.adaptive = adaptive;
       
+      if (this.frameRate === 0) {
+        this.random = true;
+      } else {
+        this.random = false;
+      }
+      
       this.killed = false;
       this.lastTimestamp = Date.now();
       
@@ -197,8 +207,12 @@
   
       var that = this;
       (function loop() {
+        var fps = that.frameRate;
         var diff = Date.now() - that.lastTimestamp;
-        if (that.frameRate === 60 || (diff) > ((900.0/that.frameRate))) {
+        if (that.random) {
+          fps = Math.floor((60-19)*Math.random()) + 20;
+        }
+        if (that.frameRate === 60 || diff > (950.0/fps)) {
           that.update();
         }
         if (!that.killed) {
