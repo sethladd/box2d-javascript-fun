@@ -40,6 +40,14 @@
       this.angle = state.a;
     }
     
+    Entity.prototype.draw = function(ctx) {
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(this.x * SCALE, this.y * SCALE, 2, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
     function CircleEntity(id, x, y, radius) {
       Entity.call(this, id, x, y);
       this.radius = radius;
@@ -53,6 +61,8 @@
       ctx.arc(this.x * SCALE, this.y * SCALE, this.radius * SCALE, 0, Math.PI * 2, true);
       ctx.closePath();
       ctx.fill();
+      
+      Entity.prototype.draw.call(this, ctx);
     }
     
     function RectangleEntity(id, x, y, halfWidth, halfHeight) {
@@ -65,19 +75,21 @@
     
     RectangleEntity.prototype.draw = function(ctx) {
       ctx.save();
-      ctx.translate((this.x-this.halfWidth) * SCALE, (this.y-this.halfHeight) * SCALE);
-      ctx.rotate(this.angle / 2);
-      ctx.translate(-(this.x-this.halfWidth) * SCALE, -(this.y-this.halfHeight) * SCALE);
+      ctx.translate(this.x * SCALE, this.y * SCALE);
+      ctx.rotate(this.angle);
+      ctx.translate(-(this.x) * SCALE, -(this.y) * SCALE);
       ctx.fillStyle = 'red';
       ctx.fillRect((this.x-this.halfWidth) * SCALE,
                    (this.y-this.halfHeight) * SCALE,
                    (this.halfWidth*2) * SCALE,
                    (this.halfHeight*2) * SCALE);
       ctx.restore();
+      
+      Entity.prototype.draw.call(this, ctx);
     }
     
     function randomEntity(id) {
-      var x = Math.random() * 25;
+      var x = Math.random() * 20;
       var y = Math.random() * 10;
       
       if (Math.random() > 0.5) {
@@ -96,8 +108,8 @@
     worker.postMessage(world);
     
     worker.onmessage = function(e) {
-      for (var i = 0; i < 10; i++) {
-        world[i].update(e.data[i]);
+      for (var id in e.data) {
+        world[id].update(e.data[id]);
       }
     };
     

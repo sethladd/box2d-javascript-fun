@@ -71,8 +71,8 @@ bTest.prototype.sendUpdate = function() {
 
 bTest.prototype.setBodies = function(bodyEntities) {
     this.bodyDef.type = b2Body.b2_dynamicBody;
-    for(var i = 0; i < 10; i++) {
-        var entity = bodyEntities[i];
+    for(var id in bodyEntities) {
+        var entity = bodyEntities[id];
         if (entity.radius) {
             this.fixDef.shape = new b2CircleShape(entity.radius);
         } else {
