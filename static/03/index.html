@@ -25,6 +25,9 @@
     
     <script>
     
+    var stats = new Stats();
+    document.body.appendChild(stats.domElement);
+    
     var SCALE = 30;
     
     function Entity(id, x, y) {
@@ -100,7 +103,7 @@
     }
     
     var world = {};
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 150; i++) {
       world[i] = randomEntity(i);
     }
     
@@ -121,6 +124,7 @@
         var entity = world[id];
         entity.draw(ctx);
       }
+      stats.update();
       requestAnimFrame(loop);
     })();
     </script>

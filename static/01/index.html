@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Box2D Javascript Fun : 01</title>
     <script src="../Box2d.min.js"></script>
+    <script src="../stats.js"></script>
   </head>
   <body>
     <canvas id="c" width="640" height="480" style="border: 1px solid black"></canvas>
@@ -20,6 +21,9 @@
                     window.setTimeout(callback, 1000 / 60);
                   };
     })();
+    
+    var stats = new Stats();
+    document.body.appendChild(stats.domElement);
   
     var world;
   
@@ -65,7 +69,7 @@
      
        //create some objects
        bodyDef.type = b2Body.b2_dynamicBody;
-       for(var i = 0; i < 10; ++i) {
+       for(var i = 0; i < 150; ++i) {
           if(Math.random() > 0.5) {
              fixDef.shape = new b2PolygonShape;
              fixDef.shape.SetAsBox(
@@ -103,6 +107,7 @@
        world.DrawDebugData();
        world.ClearForces();
      
+       stats.update();
        requestAnimFrame(update);
     }; // update()
   
