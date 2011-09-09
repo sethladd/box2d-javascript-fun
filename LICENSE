@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<!--
 Copyright 2011 Seth Ladd
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,17 +11,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Box2D JavaScript Fun : Index</title>
-  </head>
-  <body>
-    <ol>
-      <li><a href="01/index.html">01</a></li>
-      <li><a href="02/index.html">02</a></li>
-      <li><a href="03/index.html">03</a></li>
-    </ol>
-  </body>
-</html>
