@@ -62,7 +62,7 @@ bTest.prototype.update = function() {
 bTest.prototype.sendUpdate = function() {
     var world = {};
     for (var b = this.world.GetBodyList(); b; b = b.m_next) {
-        if (typeof b.GetUserData() !== 'undefined') {
+        if (typeof b.GetUserData() !== 'undefined' && b.GetUserData() != null) {
             world[b.GetUserData()] = {x: b.GetPosition().x, y: b.GetPosition().y, a: b.GetAngle()};
         }
       }

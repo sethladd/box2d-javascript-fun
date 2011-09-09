@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <title>Box2D Javascript Fun : 03 : Web Workers and Box2D</title>
     <script src="../stats.js"></script>
-    <script src="../Box2D.js"></script>
   </head>
   <body>
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
@@ -112,7 +111,8 @@
     
     worker.onmessage = function(e) {
       for (var id in e.data) {
-        world[id].update(e.data[id]);
+        var entity = world[id];
+        if (entity) entity.update(e.data[id]);
       }
     };
     
