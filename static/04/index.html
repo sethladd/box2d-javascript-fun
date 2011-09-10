@@ -42,7 +42,13 @@ limitations under the License.
       Adaptive Box2D Time Step: <input type="checkbox" class="adaptive-step-freq"> (use delta from last world.step() ?)
      </div>
      <div>
-      How often we call world.step(): <input type="range" min="1" max="60" class="update-rate" value="60"> <output class="update-rate-output">60</output>
+      Update Hz (How often we call world.step()): <input type="range" min="1" max="60" class="update-rate" value="60"> <output class="update-rate-output">60</output>
+     </div>
+     <div>
+      Num bodies: <input type="number" min="1" max="150" class="num-bodies" value="100">
+     </div>
+     <div>
+      Run Simulation: <input type="checkbox" class="run-sim" checked>
      </div>
     </div>
     
@@ -60,9 +66,14 @@ limitations under the License.
       Adaptive Box2D Time Step: <input type="checkbox" class="adaptive-step-freq"> (use delta from last world.step() ?)
      </div>
      <div>
-      How often we call world.step(): <input type="range" min="1" max="60" class="update-rate" value="30"> <output class="update-rate-output">30</output>
+      Update Hz (How often we call world.step()): <input type="range" min="1" max="60" class="update-rate" value="30"> <output class="update-rate-output">30</output>
      </div>
-
+     <div>
+      Num bodies: <input type="number" min="1" max="150" class="num-bodies" value="100">
+     </div>
+     <div>
+      Run Simulation: <input type="checkbox" class="run-sim" checked>
+     </div>
     </div>
     
     <div style="clear:both;padding-top: 20px">
@@ -134,8 +145,14 @@ limitations under the License.
           var frameRate = boxes[i].querySelector("input.fps").value;
           var adaptive = boxes[i].querySelector("input.adaptive-step-freq").checked;
           var updateRate = boxes[i].querySelector("input.update-rate").value;
+          var numBodies = boxes[i].querySelector("input.num-bodies").value;
+          var runSim = boxes[i].querySelector("input.run-sim").checked;
           if (bs[i]) bs[i].kill();
-          bs[i] = new bTest("c" + i, stepRate, frameRate, adaptive, updateRate);
+          if (runSim) {
+            bs[i] = new bTest("c" + i, stepRate, frameRate, adaptive, updateRate, numBodies);
+          } else {
+            bs[i] = null;
+          }
         }
       });
     })();
@@ -155,7 +172,7 @@ limitations under the License.
      , b2DebugDraw = Box2D.Dynamics.b2DebugDraw
        ;
   
-    function bTest(canvasId, intervalRate, frameRate, adaptive, updateRate) {
+    function bTest(canvasId, intervalRate, frameRate, adaptive, updateRate, numBodies) {
       this.canvasElem = document.getElementById(canvasId);
       this.stats = new Stats();
       this.canvasElem.parentNode.appendChild(this.stats.domElement);
@@ -165,6 +182,7 @@ limitations under the License.
       this.frameRate = parseInt(frameRate);
       this.adaptive = adaptive;
       this.updateRate = parseInt(updateRate);
+      this.numBodies = parseInt(numBodies);
       
       if (this.frameRate === 0) {
         this.random = true;
@@ -206,7 +224,7 @@ limitations under the License.
   
       //create some objects
       this.bodyDef.type = b2Body.b2_dynamicBody;
-      for(var i = 0; i < 10; ++i) {
+      for(var i = 0; i < this.numBodies; ++i) {
          if(Math.random() > 0.5) {
             this.fixDef.shape = new b2PolygonShape;
             this.fixDef.shape.SetAsBox(
