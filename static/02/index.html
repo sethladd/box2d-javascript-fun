@@ -17,7 +17,7 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Box2D Javascript Fun : 02</title>
+    <title>Box2D Javascript Fun : 02 : Side by side configurations for Box2D</title>
     <style>
     div.box {
       width: 650px;
@@ -26,6 +26,13 @@ limitations under the License.
     </style>
     <script src="../stats.js"></script>
     <script src="../Box2D.js"></script>
+    <script type="text/javascript">
+      (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+      })();
+    </script>
   </head>
   <body>
     <div class="box" id="sim0">
@@ -258,5 +265,10 @@ limitations under the License.
       this.canvasElem.parentNode.removeChild(s);
     }
     </script>
+    
+    <p>
+      <a href="http://blog.sethladd.com/2011/09/box2d-fps-and-world-step-tests-with.html">Read matching blog post for explanation</a>
+    </p>
+      <div class="g-plusone" data-size="small" data-annotation="inline"></div>
   </body>
 </html>

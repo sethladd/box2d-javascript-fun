@@ -17,11 +17,19 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Box2D Javascript Fun : 01</title>
+    <title>Box2D Javascript Fun : 01 : Simple Box2D Example</title>
     <script src="../Box2d.min.js"></script>
     <script src="../stats.js"></script>
+    <script type="text/javascript">
+      (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+      })();
+    </script>
   </head>
   <body>
+    
     <canvas id="c" width="640" height="480" style="border: 1px solid black"></canvas>
   
     <script>
@@ -128,5 +136,9 @@ limitations under the License.
   
     init();
     </script>
+    <p>
+      <a href="http://blog.sethladd.com/2011/09/box2d-javascript-example-walkthrough.html">Read matching blog post for explanation</a>
+    </p>
+    <div class="g-plusone" data-size="small" data-annotation="inline"></div>
   </body>
 </html>

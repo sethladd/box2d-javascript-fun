@@ -19,6 +19,13 @@ limitations under the License.
     <meta charset="utf-8">
     <title>Box2D Javascript Fun : 03 : Web Workers and Box2D</title>
     <script src="../stats.js"></script>
+    <script type="text/javascript">
+      (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/plusone.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+      })();
+    </script>
   </head>
   <body>
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
@@ -143,5 +150,11 @@ limitations under the License.
       requestAnimFrame(loop);
     })();
     </script>
+    
+    <p>
+      <a href="http://blog.sethladd.com/2011/09/box2d-and-web-workers-for-javascript.html">Read matching blog post for explanation</a>
+    </p>
+    
+      <div class="g-plusone" data-size="small" data-annotation="inline"></div>
   </body>
 </html>
