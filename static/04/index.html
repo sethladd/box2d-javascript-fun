@@ -17,7 +17,7 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Box2D Javascript Fun : 02</title>
+    <title>Box2D Javascript Fun : 04</title>
     <style>
     div.box {
       width: 650px;
@@ -36,10 +36,13 @@ limitations under the License.
       FPS (zero for "random"): <input type="range" min="0" max="60" class="fps" value="60"> <output class="fps-output">60</output>
      </div>
      <div>
-      Step Freq: <input type="range" min="1" max="60" class="step-freq" value="60"> <output class="step-freq-output">60</output>
+      Box2D Time Step (Hz): <input type="range" min="1" max="60" class="step-freq" value="60"> <output class="step-freq-output">60</output>
      </div>
      <div>
-      Adaptive Step Freq: <input type="checkbox" class="adaptive-step-freq">
+      Adaptive Box2D Time Step: <input type="checkbox" class="adaptive-step-freq"> (use delta from last world.step() ?)
+     </div>
+     <div>
+      How often we call world.step(): <input type="range" min="1" max="60" class="update-rate" value="60"> <output class="update-rate-output">60</output>
      </div>
     </div>
     
@@ -51,11 +54,15 @@ limitations under the License.
       FPS (zero for "random"): <input type="range" min="0" max="60" class="fps" value="30"> <output class="fps-output">30</output>
      </div>
      <div>
-      Step Freq: <input type="range" min="1" max="60" class="step-freq" value="30"> <output class="step-freq-output">30</output>
+      Box2D Time Step (Hz): <input type="range" min="1" max="60" class="step-freq" value="30"> <output class="step-freq-output">30</output>
      </div>
      <div>
-      Adaptive Step Freq: <input type="checkbox" class="adaptive-step-freq">
+      Adaptive Box2D Time Step: <input type="checkbox" class="adaptive-step-freq"> (use delta from last world.step() ?)
      </div>
+     <div>
+      How often we call world.step(): <input type="range" min="1" max="60" class="update-rate" value="30"> <output class="update-rate-output">30</output>
+     </div>
+
     </div>
     
     <div style="clear:both;padding-top: 20px">
@@ -98,6 +105,7 @@ limitations under the License.
     
     linkInputOutput("fps");
     linkInputOutput("step-freq");
+    linkInputOutput("update-rate");
     
     (function() {
       var adaptives = document.querySelectorAll("input.adaptive-step-freq");
@@ -125,8 +133,9 @@ limitations under the License.
           var stepRate = boxes[i].querySelector("input.step-freq").value;
           var frameRate = boxes[i].querySelector("input.fps").value;
           var adaptive = boxes[i].querySelector("input.adaptive-step-freq").checked;
+          var updateRate = boxes[i].querySelector("input.update-rate").value;
           if (bs[i]) bs[i].kill();
-          bs[i] = new bTest("c" + i, stepRate, frameRate, adaptive);
+          bs[i] = new bTest("c" + i, stepRate, frameRate, adaptive, updateRate);
         }
       });
     })();
@@ -146,7 +155,7 @@ limitations under the License.
      , b2DebugDraw = Box2D.Dynamics.b2DebugDraw
        ;
   
-    function bTest(canvasId, intervalRate, frameRate, adaptive) {
+    function bTest(canvasId, intervalRate, frameRate, adaptive, updateRate) {
       this.canvasElem = document.getElementById(canvasId);
       this.stats = new Stats();
       this.canvasElem.parentNode.appendChild(this.stats.domElement);
@@ -155,6 +164,7 @@ limitations under the License.
       this.intervalRate = parseInt(intervalRate);
       this.frameRate = parseInt(frameRate);
       this.adaptive = adaptive;
+      this.updateRate = parseInt(updateRate);
       
       if (this.frameRate === 0) {
         this.random = true;
@@ -163,7 +173,9 @@ limitations under the License.
       }
       
       this.killed = false;
-      this.lastTimestamp = Date.now();
+      
+      this.lastUpdate = Date.now();
+      this.lastPaint = Date.now();
       
       this.world = new b2World(
             new b2Vec2(0, 10)    //gravity
@@ -221,15 +233,33 @@ limitations under the License.
       this.world.SetDebugDraw(this.debugDraw);
   
       var that = this;
+      
       (function loop() {
+        var now = Date.now();
+        var diffUpdate = now - that.lastUpdate;
+        var diffPaint = now - that.lastPaint;
+        
+        // update
+        
+        if (that.updateRate === 60 || diffUpdate > (1000.0/that.updateRate)) {
+          that.update(now, diffUpdate);
+        } else {
+          //console.log("skipped update");
+        }
+        
+        // draw
         var fps = that.frameRate;
-        var diff = Date.now() - that.lastTimestamp;
+        
         if (that.random) {
           fps = Math.floor((60-19)*Math.random()) + 20;
         }
-        if (that.frameRate === 60 || diff > (1000.0/fps)) {
-          that.update();
+        
+        if (that.frameRate === 60 || diffPaint > (1000.0/fps)) {
+          that.draw(now, diffPaint);
+        } else {
+          //console.log("skipped draw");
         }
+        
         if (!that.killed) {
           requestAnimFrame(loop);
         } else {
@@ -238,18 +268,21 @@ limitations under the License.
       })();
     }
     
-    bTest.prototype.update = function() {
-      var now = Date.now();
-      var stepRate = (this.adaptive) ? (now - this.lastTimestamp) / 1000 : (1 / this.intervalRate);
-      this.lastTimestamp = now;
+    bTest.prototype.draw = function(now, delta) {
+      this.world.DrawDebugData();
+      this.stats.update();
+      this.lastPaint = now;
+    }
+    
+    bTest.prototype.update = function(now, delta) {
+      var stepRate = (this.adaptive) ? (delta) / 1000 : (1 / this.intervalRate);
       this.world.Step(
              stepRate   //frame-rate
           ,  10       //velocity iterations
           ,  10       //position iterations
        );
-       this.world.DrawDebugData();
        this.world.ClearForces();
-       this.stats.update();
+       this.lastUpdate = now;
     }
     
     bTest.prototype.kill = function() {
