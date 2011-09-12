@@ -39,7 +39,7 @@ limitations under the License.
     <h1>Box2D running in a Web worker controlled by <a href="https://developer.mozilla.org/en/API/PageVisibility/Page_Visibility_API">Page Visibility API</a>, Version 2</h1>
     <canvas id="c0" width="1024" height="768" style="border: 1px solid black"></canvas>
 
-    <script>
+    <script async>
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
     window.requestAnimFrame = (function(){
           return  window.requestAnimationFrame       || 
@@ -53,7 +53,7 @@ limitations under the License.
     })();
     </script>
     
-    <script>
+    <script async>
     
     var drawStats = new Stats(true);
     drawStats.showMode(1);
@@ -140,25 +140,24 @@ limitations under the License.
     }
     
     var world = {};
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 120; i++) {
       world[i] = randomEntity(i);
     }
     
     var USE_WORKER = window.location.href.indexOf('worker') > 0;
+    var worker = null;
     
     var bodiesState = null;
     
     if (USE_WORKER) {
-      var worker = new Worker('physics.js');
+      worker = new Worker('physics.js');
       worker.postMessage({'cmd': 'bodies', 'msg': world});
 
       document.addEventListener('webkitvisibilitychange', function() {
         if (document.webkitHidden) {
           worker.postMessage({'cmd': 'hidden'});
-          console.log('page now hidden, sent msg to worker');
         } else {
           worker.postMessage({'cmd': 'visible'});
-          console.log('page now visible, sent msg to worker');
         }
       }, false);
 
@@ -171,11 +170,14 @@ limitations under the License.
     }
 
     
-    function update() {
+    function update(animStart) {
       updateStats.start();
       if (!USE_WORKER) {
         box.update();
         bodiesState = box.getState();
+      } else {
+        // ask for box to sim out to the next frame
+        worker.postMessage({'cmd':'req'});
       }
       for (var id in bodiesState) {
         var entity = world[id];
@@ -185,10 +187,12 @@ limitations under the License.
     }
     
     var ctx = document.getElementById("c0").getContext("2d");
+    var canvasWidth = ctx.canvas.width;
+    var canvasHeight = ctx.canvas.height;
     
     function draw() {
       drawStats.start();
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       for (var id in world) {
         var entity = world[id];
         entity.draw(ctx);
@@ -197,11 +201,14 @@ limitations under the License.
       fpsStats.update();
     }
     
-    (function loop() {
-      update();
-      draw();
-      requestAnimFrame(loop);
-    })();
+    document.addEventListener("DOMContentLoaded", function() {
+      (function loop(animStart) {
+        update(animStart);
+        draw();
+        requestAnimFrame(loop);
+      })();
+    }, false);
+
     </script>
     
     <ol>

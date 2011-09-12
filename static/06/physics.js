@@ -21,29 +21,15 @@ var Hz = 60;
 
 var box = new bTest(Hz, false);
 
-var loop = function() {
-    if (box.ready) {
-      box.update();
-      var world = box.getState();
-      postMessage(world);
-    }
-}
-
-var intervalId = setInterval(loop, 1000/Hz);
-
 self.onmessage = function(e) {
     switch (e.data.cmd) {
-        case 'visible':
-            if (intervalId == null) {
-                intervalId = setInterval(loop, 1000/Hz);
-            }
-            break;
-        case 'hidden':
-            clearInterval(intervalId);
-            intervalId = null;
-            break;
-        case 'bodies':
-            box.setBodies(e.data.msg);
-            break;
+      case 'bodies':
+        box.setBodies(e.data.msg);
+        break;
+      case 'req':
+        box.update(e.data.msg);
+        var world = box.getState();
+        postMessage(world);
+        break;  
     }
 };
