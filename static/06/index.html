@@ -55,12 +55,12 @@ limitations under the License.
     
     <script async>
     
-    var drawStats = new Stats(true);
+    var drawStats = new Stats(false);
     drawStats.showMode(1);
-    var updateStats = new Stats(true);
+    var updateStats = new Stats(false);
     updateStats.showMode(1);
-    var fpsStats = new Stats(true);
-    var boxStats = new Stats(true);
+    var fpsStats = new Stats(false);
+    var boxStats = new Stats(false);
     boxStats.showMode(1);
     
     document.body.appendChild(drawStats.domElement);
@@ -143,36 +143,10 @@ limitations under the License.
     }
     
     var world = {};
-    for (var i = 0; i < 120; i++) {
-      world[i] = randomEntity(i);
-    }
-    
     var USE_WORKER = window.location.href.indexOf('worker') > 0;
     var worker = null;
-    
     var bodiesState = null;
-    
-    if (USE_WORKER) {
-      worker = new Worker('physics.js');
-      worker.postMessage({'cmd': 'bodies', 'msg': world});
-
-      document.addEventListener('webkitvisibilitychange', function() {
-        if (document.webkitHidden) {
-          worker.postMessage({'cmd': 'hidden'});
-        } else {
-          worker.postMessage({'cmd': 'visible'});
-        }
-      }, false);
-
-      worker.onmessage = function(e) {
-        boxStats.update(e.data.t);
-        bodiesState = e.data.w;
-      };
-    } else {
-      var box = new bTest(60, false);
-      box.setBodies(world);
-    }
-
+    var box = null;
     
     function update(animStart) {
       updateStats.start();
@@ -206,6 +180,23 @@ limitations under the License.
     }
     
     document.addEventListener("DOMContentLoaded", function() {
+      for (var i = 0; i < 120; i++) {
+        world[i] = randomEntity(i);
+      }
+
+      if (USE_WORKER) {
+        worker = new Worker('physics.js');
+        worker.postMessage({'cmd': 'bodies', 'msg': world});
+
+        worker.onmessage = function(e) {
+          boxStats.update(e.data.t);
+          bodiesState = e.data.w;
+        };
+      } else {
+        box = new bTest(60, false);
+        box.setBodies(world);
+      }
+      
       (function loop(animStart) {
         update(animStart);
         draw();
