@@ -17,7 +17,7 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Box2D Javascript Fun : 06 : Web Workers and Box2D and Page Visibility API, Version 2</title>
+    <title>Box2D Javascript Fun : 06 : Web Workers and Box2D, Version 2</title>
     <link rel="author" href="http://profiles.google.com/sethladd">
     <script src="Stats.js"></script>
     <script src="../Box2D.js"></script>
@@ -36,7 +36,7 @@ limitations under the License.
     </style>
   </head>
   <body>
-    <h1>Box2D running in a Web worker controlled by <a href="https://developer.mozilla.org/en/API/PageVisibility/Page_Visibility_API">Page Visibility API</a>, Version 2</h1>
+    <h1>Box2D running in a Web worker, Version 2</h1>
     <canvas id="c0" width="1024" height="768" style="border: 1px solid black"></canvas>
 
     <script async>
@@ -147,20 +147,26 @@ limitations under the License.
     var worker = null;
     var bodiesState = null;
     var box = null;
+    var needToDraw = true;
     
     function update(animStart) {
       updateStats.start();
       if (!USE_WORKER) {
         boxStats.update(box.update());
         bodiesState = box.getState();
-      } else {
+        needToDraw = true;
+      } else if (USE_WORKER && needToDraw) {
         // ask for box to sim out to the next frame
         worker.postMessage({'cmd':'req'});
+      } else if (USE_WORKER && !needToDraw) {
+        return;
       }
+      
       for (var id in bodiesState) {
         var entity = world[id];
         if (entity) entity.update(bodiesState[id]);
       }
+      
       updateStats.update();
     }
     
@@ -170,17 +176,20 @@ limitations under the License.
     
     function draw() {
       drawStats.start();
+      if (!needToDraw) return;
+      
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       for (var id in world) {
         var entity = world[id];
         entity.draw(ctx);
       }
+      needToDraw = false;
       drawStats.update();
       fpsStats.update();
     }
     
     document.addEventListener("DOMContentLoaded", function() {
-      for (var i = 0; i < 120; i++) {
+      for (var i = 0; i < 75; i++) {
         world[i] = randomEntity(i);
       }
 
@@ -191,6 +200,7 @@ limitations under the License.
         worker.onmessage = function(e) {
           boxStats.update(e.data.t);
           bodiesState = e.data.w;
+          needToDraw = true;
         };
       } else {
         box = new bTest(60, false);
