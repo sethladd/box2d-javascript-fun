@@ -54,6 +54,8 @@ bTest.prototype.update = function() {
       ,  10       //position iterations
    );
    this.world.ClearForces();
+   var later = Date.now();
+   return later - now;
 }
 
 bTest.prototype.getState = function() {

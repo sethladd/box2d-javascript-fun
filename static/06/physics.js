@@ -27,9 +27,9 @@ self.onmessage = function(e) {
         box.setBodies(e.data.msg);
         break;
       case 'req':
-        box.update(e.data.msg);
+        var timing = box.update(e.data.msg);
         var world = box.getState();
-        postMessage(world);
+        postMessage({"t": timing, "w": world});
         break;  
     }
 };

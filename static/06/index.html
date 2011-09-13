@@ -60,10 +60,13 @@ limitations under the License.
     var updateStats = new Stats(true);
     updateStats.showMode(1);
     var fpsStats = new Stats(true);
+    var boxStats = new Stats(true);
+    boxStats.showMode(1);
     
     document.body.appendChild(drawStats.domElement);
     document.body.appendChild(updateStats.domElement);
     document.body.appendChild(fpsStats.domElement);
+    document.body.appendChild(boxStats.domElement);
     
     var SCALE = 30;
     
@@ -162,7 +165,8 @@ limitations under the License.
       }, false);
 
       worker.onmessage = function(e) {
-        bodiesState = e.data;
+        boxStats.update(e.data.t);
+        bodiesState = e.data.w;
       };
     } else {
       var box = new bTest(60, false);
@@ -173,7 +177,7 @@ limitations under the License.
     function update(animStart) {
       updateStats.start();
       if (!USE_WORKER) {
-        box.update();
+        boxStats.update(box.update());
         bodiesState = box.getState();
       } else {
         // ask for box to sim out to the next frame
@@ -215,6 +219,7 @@ limitations under the License.
       <li>Draw time</li>
       <li>Update time</li>
       <li>FPS</li>
+      <li>Box update time</li>
     </ol>
     
     <p><a href="index.html?worker">Use Worker</a> or <a href="index.html">Use Inline</a> Wondering which one you are using now? Check URL, if ?worker is there, you are using worker.</p>
