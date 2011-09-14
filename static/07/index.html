@@ -32,7 +32,7 @@ limitations under the License.
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
     
     <p>
-      Read matching blog post for explanation
+      <a href="http://blog.sethladd.com/2011/09/box2d-and-polygons-for-javascript.html">Read matching blog post for explanation</a>
     </p>
     
     <script async>
@@ -148,11 +148,11 @@ limitations under the License.
       ctx.fillStyle = 'red';
 
       ctx.beginPath();
-      ctx.moveTo(this.x * SCALE, this.y * SCALE);
+      ctx.moveTo((this.x + this.points[0].x) * SCALE, (this.y + this.points[0].y) * SCALE);
       for (var i = 1; i < this.points.length; i++) {
          ctx.lineTo((this.points[i].x + this.x) * SCALE, (this.points[i].y + this.y) * SCALE);
       }
-      ctx.lineTo(this.x * SCALE, this.y * SCALE);
+      ctx.lineTo((this.x + this.points[0].x) * SCALE, (this.y + this.points[0].y) * SCALE);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
@@ -205,7 +205,7 @@ limitations under the License.
     var initialState = {"0": {id: 0, x: 10, y: 5, radius: 2},
                         "1": {id: 1, x: 5, y: 5, points: [{x: 0, y: 0}, {x: 1, y: 0}, {x: 0, y:2}]},
                         "2": {id: 2, x: 9, y: 4, halfHeight: 1.5, halfWidth: 0.9},
-                        "3": {id: 3, x: 4.5, y: 3, points: [{x: 0, y: 0}, {x: 1, y: 0}, {x: 0, y:2}, {x:-0.5, y: 1.5}]}};
+                        "3": {id: 3, x: 4.5, y: 3, points: [{x: 0, y: -2}, {x: 2, y: 0}, {x: 0, y:2}, {x:-0.5, y: 1.5}]}};
     
     document.addEventListener("DOMContentLoaded", function() {
       for (var i in initialState) {
