@@ -10,16 +10,17 @@ var   b2Vec2 = Box2D.Common.Math.b2Vec2
  , b2DebugDraw = Box2D.Dynamics.b2DebugDraw
    ;
 
-function bTest(intervalRate, adaptive) {
+function bTest(intervalRate, adaptive, width, height, scale) {
   this.intervalRate = parseInt(intervalRate);
   this.adaptive = adaptive;
+  this.width = width;
+  this.height = height;
+  this.scale = scale;
 
   this.world = new b2World(
         new b2Vec2(0, 10)    //gravity
      ,  true                 //allow sleep
   );
-
-  var SCALE = 30;
 
   this.fixDef = new b2FixtureDef;
   this.fixDef.density = 1.0;
@@ -32,13 +33,13 @@ function bTest(intervalRate, adaptive) {
   this.bodyDef.type = b2Body.b2_staticBody;
 
   // positions the center of the object (not upper left!)
-  this.bodyDef.position.x = 1024 / 2 / SCALE;
-  this.bodyDef.position.y = 768 / SCALE;
+  this.bodyDef.position.x = this.width / 2 / this.scale;
+  this.bodyDef.position.y = this.height / this.scale;
 
   this.fixDef.shape = new b2PolygonShape;
 
   // half width, half height. eg actual height here is 1 unit
-  this.fixDef.shape.SetAsBox((1000 / SCALE) / 2, (10/SCALE) / 2);
+  this.fixDef.shape.SetAsBox((this.width-(this.width*0.1) / this.scale) / 2, (10/this.scale) / 2);
   this.world.CreateBody(this.bodyDef).CreateFixture(this.fixDef);
 }
 
@@ -70,6 +71,15 @@ bTest.prototype.setBodies = function(bodyEntities) {
         var entity = bodyEntities[id];
         if (entity.radius) {
             this.fixDef.shape = new b2CircleShape(entity.radius);
+        } else if (entity.points) {
+            var points = [];
+            for (var i = 0; i < entity.points.length; i++) {
+                var vec = new b2Vec2();
+                vec.Set(entity.points[i].x, entity.points[i].y);
+                points[i] = vec;
+            }
+            this.fixDef.shape = new b2PolygonShape;
+            this.fixDef.shape.SetAsArray(points, points.length);
         } else {
             this.fixDef.shape = new b2PolygonShape;
             this.fixDef.shape.SetAsBox(entity.halfWidth, entity.halfHeight);
