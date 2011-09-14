@@ -19,16 +19,15 @@ limitations under the License.
     <meta charset="utf-8">
     <title>Box2D Javascript Fun : 06 : Web Workers and Box2D, Version 2</title>
     <link rel="author" href="http://profiles.google.com/sethladd">
-    <script src="Stats.js"></script>
     <script src="../Box2D.js"></script>
     <script src="bTest.js"></script>
-    <script type="text/javascript">
+    <!--<script type="text/javascript">
       (function() {
         var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
         po.src = 'https://apis.google.com/js/plusone.js';
         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
       })();
-    </script>
+    </script>-->
     <style>
     body {
       -webkit-transform: translateZ(0);
@@ -38,7 +37,15 @@ limitations under the License.
   <body>
     <h1>Box2D running in a Web worker, Version 2</h1>
     <canvas id="c0" width="1024" height="768" style="border: 1px solid black"></canvas>
-
+    
+    <p><a href="index.html?worker">Use Worker</a> or <a href="index.html">Use Inline</a> Wondering which one you are using now? Check URL, if ?worker is there, you are using worker.</p>
+    
+    <p>
+      Read matching blog post for explanation
+    </p>
+    
+    <div class="g-plusone" data-size="small" data-annotation="inline"></div>
+    
     <script async>
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
     window.requestAnimFrame = (function(){
@@ -54,20 +61,7 @@ limitations under the License.
     </script>
     
     <script async>
-    
-    var drawStats = new Stats(false);
-    drawStats.showMode(1);
-    var updateStats = new Stats(false);
-    updateStats.showMode(1);
-    var fpsStats = new Stats(false);
-    var boxStats = new Stats(false);
-    boxStats.showMode(1);
-    
-    document.body.appendChild(drawStats.domElement);
-    document.body.appendChild(updateStats.domElement);
-    document.body.appendChild(fpsStats.domElement);
-    document.body.appendChild(boxStats.domElement);
-    
+
     var SCALE = 30;
     
     function Entity(id, x, y) {
@@ -89,6 +83,14 @@ limitations under the License.
       ctx.arc(this.x * SCALE, this.y * SCALE, 2, 0, Math.PI * 2, true);
       ctx.closePath();
       ctx.fill();
+    }
+    
+    Entity.build = function(def) {
+      if (def.radius) {
+        return new CircleEntity(def.id, def.x, def.y, def.radius);
+      } else {
+        return new RectangleEntity(def.id, def.x, def.y, def.halfWidth, def.halfHeight);
+      }
     }
     
     function CircleEntity(id, x, y, radius) {
@@ -142,22 +144,23 @@ limitations under the License.
       }
     }
     
+    var initialState = {"0":{"id":0,"x":25.817464775172994,"y":9.696667795069516,"angle":0,"radius":0.3718856367282569},"1":{"id":1,"x":4.233252465492114,"y":8.245718353427947,"angle":0,"radius":0.2653290670365095},"2":{"id":2,"x":9.63951712124981,"y":2.878207841422409,"angle":0,"radius":0.6252950745634734},"3":{"id":3,"x":27.81324195326306,"y":1.4860119251534343,"angle":0,"radius":0.5527138464618474},"4":{"id":4,"x":23.945281809428707,"y":9.725064744707197,"angle":0,"halfWidth":0.19110117820091546,"halfHeight":0.6040685220155865},"5":{"id":5,"x":11.619872472947463,"y":5.640873049851507,"angle":0,"halfWidth":0.9801824261900037,"halfHeight":0.20713304230012},"6":{"id":6,"x":10.851720890495926,"y":8.532477866392583,"angle":0,"radius":0.49397180383093653},"7":{"id":7,"x":9.504689542809501,"y":8.788602862041444,"angle":0,"halfWidth":0.3234216269571334,"halfHeight":0.675849418528378},"8":{"id":8,"x":13.951832752209157,"y":2.0785546954721212,"angle":0,"halfWidth":0.9699517077766359,"halfHeight":0.5616177945863455},"9":{"id":9,"x":34.8550592106767,"y":6.083495267666876,"angle":0,"halfWidth":0.21481001041829587,"halfHeight":0.4074312857352197},"10":{"id":10,"x":15.936616000253707,"y":0.3335359529592097,"angle":0,"radius":0.31242468431591985},"11":{"id":11,"x":21.224554191576317,"y":5.070570500101894,"angle":0,"radius":0.35696559576317666},"12":{"id":12,"x":1.76963608013466,"y":6.756980591453612,"angle":0,"radius":0.49551551197655497},"13":{"id":13,"x":1.1162014119327068,"y":0.15646542888134718,"angle":0,"radius":0.330843665311113},"14":{"id":14,"x":8.578106202185154,"y":2.542514952365309,"angle":0,"radius":0.8597138441633433},"15":{"id":15,"x":25.45763308997266,"y":5.0225635059177876,"angle":0,"halfWidth":0.4428461677394807,"halfHeight":0.18350235782563687},"16":{"id":16,"x":26.250327983871102,"y":0.23284390568733215,"angle":0,"halfWidth":0.1603472355287522,"halfHeight":0.7792360940016806},"17":{"id":17,"x":8.587855239165947,"y":5.616735899820924,"angle":0,"halfWidth":0.4828007604461163,"halfHeight":0.7314992203842848},"18":{"id":18,"x":6.099083701847121,"y":5.7771448022685945,"angle":0,"radius":1.047249499615282},"19":{"id":19,"x":12.458606839645654,"y":5.108109666034579,"angle":0,"radius":0.7492724209092557},"20":{"id":20,"x":16.503228053916246,"y":5.880995315965265,"angle":0,"halfWidth":1.019061090797186,"halfHeight":0.5240053051616996},"21":{"id":21,"x":19.084262290271,"y":3.430371379945427,"angle":0,"halfWidth":0.8832968290895223,"halfHeight":0.1295130687300116},"22":{"id":22,"x":1.593955660937354,"y":2.518465453758836,"angle":0,"radius":0.9008121717721224},"23":{"id":23,"x":7.5657182454597205,"y":9.266862524673343,"angle":0,"halfWidth":1.040866944147274,"halfHeight":0.6265026974957436},"24":{"id":24,"x":8.08012129389681,"y":0.546552985906601,"angle":0,"halfWidth":0.7059267190285027,"halfHeight":0.2082990688737482},"25":{"id":25,"x":27.046325207920745,"y":8.504182458855212,"angle":0,"halfWidth":0.8818265445530414,"halfHeight":1.0292500209994615},"26":{"id":26,"x":2.5847112119663507,"y":2.0891609601676464,"angle":0,"halfWidth":0.1990445634815842,"halfHeight":1.053261555172503},"27":{"id":27,"x":21.449252830352634,"y":9.83191495994106,"angle":0,"radius":0.5733046195469796},"28":{"id":28,"x":15.559425584506243,"y":6.482018518727273,"angle":0,"halfWidth":0.11523106265813113,"halfHeight":0.34442535708658395},"29":{"id":29,"x":34.84594305511564,"y":5.289825985673815,"angle":0,"radius":0.7262303981930017},"30":{"id":30,"x":17.214690605178475,"y":9.750213457737118,"angle":0,"radius":0.6811704488005489},"31":{"id":31,"x":20.78083427506499,"y":4.890444562770426,"angle":0,"radius":0.3245211116969585},"32":{"id":32,"x":2.883326143492013,"y":8.749768526758999,"angle":0,"radius":0.3287472307216376},"33":{"id":33,"x":24.851048971759155,"y":9.347130812238902,"angle":0,"radius":0.1658894896041602},"34":{"id":34,"x":20.890619321726263,"y":2.951506196986884,"angle":0,"radius":0.9189666531980037},"35":{"id":35,"x":32.824309611460194,"y":2.014610900077969,"angle":0,"radius":1.0132413268089295},"36":{"id":36,"x":31.24408611562103,"y":4.21240029623732,"angle":0,"halfWidth":0.8585983141325414,"halfHeight":0.4575240364298224},"37":{"id":37,"x":6.196896962355822,"y":5.957832811400294,"angle":0,"halfWidth":0.45739169432781634,"halfHeight":0.2969764053355902},"38":{"id":38,"x":13.692127286922187,"y":5.937796700745821,"angle":0,"radius":0.10551952351815999},"39":{"id":39,"x":2.1638878260273486,"y":4.472526032477617,"angle":0,"halfWidth":0.15377600667998195,"halfHeight":0.7599232046864927},"40":{"id":40,"x":11.278887278167531,"y":3.6937029473483562,"angle":0,"radius":0.7931426969822496},"41":{"id":41,"x":2.099393825046718,"y":9.013198735192418,"angle":0,"radius":0.8730728252790868},"42":{"id":42,"x":16.69954335084185,"y":5.327229760587215,"angle":0,"radius":0.17855977374128998},"43":{"id":43,"x":1.0139313014224172,"y":5.325518136378378,"angle":0,"halfWidth":0.7299840833526104,"halfHeight":0.8545565841719508},"44":{"id":44,"x":34.523615691578016,"y":4.94837406091392,"angle":0,"halfWidth":1.0935903106816114,"halfHeight":0.8221301801037043},"45":{"id":45,"x":21.97729309089482,"y":3.0290123471058905,"angle":0,"halfWidth":0.5078625540714711,"halfHeight":0.3683612210676074},"46":{"id":46,"x":1.7821214615833014,"y":5.3413943387568,"angle":0,"radius":0.29116713618859646},"47":{"id":47,"x":18.41882122680545,"y":2.8183640469796956,"angle":0,"radius":0.9425238386262208},"48":{"id":48,"x":21.399626274360344,"y":1.6113290912471712,"angle":0,"radius":0.2794609809294343},"49":{"id":49,"x":0.9851042914669961,"y":2.012258053291589,"angle":0,"radius":0.39254825878888366},"50":{"id":50,"x":26.7281953827478,"y":5.592201775871217,"angle":0,"radius":0.43489880827255545},"51":{"id":51,"x":3.6010445177089423,"y":3.6616892530582845,"angle":0,"halfWidth":1.0366441485472024,"halfHeight":0.760751796560362},"52":{"id":52,"x":14.551557046361268,"y":2.8099010651931167,"angle":0,"radius":0.7213504408951849},"53":{"id":53,"x":32.78815663419664,"y":6.9838887779042125,"angle":0,"radius":0.9755978068802506},"54":{"id":54,"x":21.130419455002993,"y":2.704470152966678,"angle":0,"radius":0.9745795099530369},"55":{"id":55,"x":12.783921579830348,"y":7.82200405607,"angle":0,"radius":0.1948689440265298},"56":{"id":56,"x":14.735380662605166,"y":8.992431506048888,"angle":0,"halfWidth":0.2306715300306678,"halfHeight":0.6292002661153674},"57":{"id":57,"x":12.487328327260911,"y":7.295633845496923,"angle":0,"radius":0.4743535540997982},"58":{"id":58,"x":10.068034046562389,"y":0.5666693532839417,"angle":0,"radius":0.6382347956765443},"59":{"id":59,"x":16.325977145461366,"y":9.87616780679673,"angle":0,"radius":0.9245417820289731},"60":{"id":60,"x":17.946122034918517,"y":4.9019442847929895,"angle":0,"halfWidth":1.034834217419848,"halfHeight":0.2094826040789485},"61":{"id":61,"x":32.046934484969825,"y":2.4521456263028085,"angle":0,"radius":0.6753145990893245},"62":{"id":62,"x":7.525000418536365,"y":1.6114151594229043,"angle":0,"radius":0.20071985749527813},"63":{"id":63,"x":15.723416151013225,"y":0.038267914205789566,"angle":0,"radius":0.4894909920636564},"64":{"id":64,"x":15.020073743071407,"y":8.732690280303359,"angle":0,"halfWidth":0.16587144918739796,"halfHeight":0.3528631363529712},"65":{"id":65,"x":23.468361446866766,"y":1.6030905162915587,"angle":0,"radius":0.42723048725165425},"66":{"id":66,"x":27.884161432739347,"y":1.0726073873229325,"angle":0,"halfWidth":0.35584086100570855,"halfHeight":0.6075677139684558},"67":{"id":67,"x":6.404327863128856,"y":2.3949539568275213,"angle":0,"halfWidth":0.39972193134017286,"halfHeight":0.6245021106675267},"68":{"id":68,"x":33.898292707744986,"y":3.461699252948165,"angle":0,"radius":0.21862310045398772},"69":{"id":69,"x":21.02442976552993,"y":5.0372020760551095,"angle":0,"radius":0.8852867506444454},"70":{"id":70,"x":15.02366375993006,"y":0.05136240739375353,"angle":0,"halfWidth":0.9675424116663635,"halfHeight":0.6507205843459815},"71":{"id":71,"x":17.316218237392604,"y":8.608198531437665,"angle":0,"halfWidth":0.5346552423667162,"halfHeight":1.0690811913460494},"72":{"id":72,"x":17.438213585410267,"y":9.91622318746522,"angle":0,"halfWidth":0.4834751925896853,"halfHeight":0.3240494817961007},"73":{"id":73,"x":23.07665918720886,"y":9.138374114409089,"angle":0,"radius":0.616435356810689},"74":{"id":74,"x":7.635660553351045,"y":3.492400022223592,"angle":0,"radius":0.7108973366208374},"75":{"id":75,"x":16.672034265939146,"y":8.948585209436715,"angle":0,"radius":0.1717234299518168},"76":{"id":76,"x":29.75883299484849,"y":8.229948692023754,"angle":0,"radius":1.095475794421509},"77":{"id":77,"x":31.170389481121674,"y":2.4525689077563584,"angle":0,"halfWidth":0.10759848905727268,"halfHeight":0.5797625949140638},"78":{"id":78,"x":3.971628602594137,"y":0.4971437365747988,"angle":0,"halfWidth":0.853151589538902,"halfHeight":0.49345256285741923},"79":{"id":79,"x":2.957650509197265,"y":0.968411504290998,"angle":0,"radius":0.19097453043796123},"80":{"id":80,"x":20.664171386742964,"y":8.47573529696092,"angle":0,"radius":0.3455511717125773},"81":{"id":81,"x":31.662431955337524,"y":9.026684563141316,"angle":0,"radius":0.47120874202810226},"82":{"id":82,"x":30.17767490935512,"y":5.982668525539339,"angle":0,"radius":0.23420012686401606},"83":{"id":83,"x":33.80288123968057,"y":5.3701468161307275,"angle":0,"radius":0.725327087007463},"84":{"id":84,"x":2.982408801326528,"y":0.5704504507593811,"angle":0,"halfWidth":0.6198107482865453,"halfHeight":0.5416595795191824},"85":{"id":85,"x":33.719406875316054,"y":4.050331523176283,"angle":0,"radius":0.4575127467047423},"86":{"id":86,"x":22.19405667623505,"y":9.855037974193692,"angle":0,"halfWidth":0.3138518472202122,"halfHeight":0.6376296932809055},"87":{"id":87,"x":5.295849294634536,"y":7.580986765678972,"angle":0,"halfWidth":0.7681512200739234,"halfHeight":0.6072509085293859},"88":{"id":88,"x":7.329261424019933,"y":1.6235413146205246,"angle":0,"halfWidth":0.712208619248122,"halfHeight":0.6856580408290028},"89":{"id":89,"x":10.59957578429021,"y":6.846935865469277,"angle":0,"radius":1.0352337936870755},"90":{"id":90,"x":26.38704701093957,"y":1.5177985443733633,"angle":0,"radius":0.17383259269408882},"91":{"id":91,"x":6.951320625375956,"y":7.039202924352139,"angle":0,"radius":0.4723060912452638},"92":{"id":92,"x":2.8545887488871813,"y":7.2026095213368535,"angle":0,"halfWidth":0.9322084373794496,"halfHeight":0.9756848589982837},"93":{"id":93,"x":14.566206984454766,"y":3.5711301187984645,"angle":0,"radius":0.8295895663555711},"94":{"id":94,"x":12.955957774538547,"y":8.259855119977146,"angle":0,"radius":1.0083424520213158},"95":{"id":95,"x":7.053065471118316,"y":3.555207150056958,"angle":0,"halfWidth":0.6552064043004066,"halfHeight":0.4766803699545562},"96":{"id":96,"x":28.38703535264358,"y":8.428068843204528,"angle":0,"radius":0.7982918211724609},"97":{"id":97,"x":13.937859871657565,"y":6.440726122818887,"angle":0,"radius":0.20955701489001513},"98":{"id":98,"x":4.9480666243471205,"y":4.970990244764835,"angle":0,"halfWidth":0.1481134990695864,"halfHeight":0.8765541630797088},"99":{"id":99,"x":6.686738975113258,"y":6.729067084379494,"angle":0,"halfWidth":0.5751080023124814,"halfHeight":0.5360658719670027}};
+    
     var world = {};
     var USE_WORKER = window.location.href.indexOf('worker') > 0;
     var worker = null;
     var bodiesState = null;
     var box = null;
+    var msgId = 0;
     var needToDraw = true;
     
     function update(animStart) {
-      updateStats.start();
       if (!USE_WORKER) {
-        boxStats.update(box.update());
+        box.update();
         bodiesState = box.getState();
         needToDraw = true;
       } else if (USE_WORKER && needToDraw) {
-        // ask for box to sim out to the next frame
-        worker.postMessage({'cmd':'req'});
+        worker.postMessage({'cmd':'req', 'id': msgId++});
       } else if (USE_WORKER && !needToDraw) {
         return;
       }
@@ -166,8 +169,6 @@ limitations under the License.
         var entity = world[id];
         if (entity) entity.update(bodiesState[id]);
       }
-      
-      updateStats.update();
     }
     
     var ctx = document.getElementById("c0").getContext("2d");
@@ -175,7 +176,7 @@ limitations under the License.
     var canvasHeight = ctx.canvas.height;
     
     function draw() {
-      drawStats.start();
+      //console.log("d");
       if (!needToDraw) return;
       
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -183,22 +184,21 @@ limitations under the License.
         var entity = world[id];
         entity.draw(ctx);
       }
+      
       needToDraw = false;
-      drawStats.update();
-      fpsStats.update();
     }
     
     document.addEventListener("DOMContentLoaded", function() {
-      for (var i = 0; i < 75; i++) {
-        world[i] = randomEntity(i);
+      for (var i in initialState) {
+        world[i] = Entity.build(initialState[i]);
       }
-
+      
       if (USE_WORKER) {
         worker = new Worker('physics.js');
         worker.postMessage({'cmd': 'bodies', 'msg': world});
 
         worker.onmessage = function(e) {
-          boxStats.update(e.data.t);
+          //console.log("m:" + e.data.id);
           bodiesState = e.data.w;
           needToDraw = true;
         };
@@ -206,29 +206,15 @@ limitations under the License.
         box = new bTest(60, false);
         box.setBodies(world);
       }
-      
+
       (function loop(animStart) {
         update(animStart);
         draw();
         requestAnimFrame(loop);
       })();
+      
     }, false);
 
     </script>
-    
-    <ol>
-      <li>Draw time</li>
-      <li>Update time</li>
-      <li>FPS</li>
-      <li>Box update time</li>
-    </ol>
-    
-    <p><a href="index.html?worker">Use Worker</a> or <a href="index.html">Use Inline</a> Wondering which one you are using now? Check URL, if ?worker is there, you are using worker.</p>
-    
-    <p>
-      Read matching blog post for explanation
-    </p>
-    
-    <div class="g-plusone" data-size="small" data-annotation="inline"></div>
   </body>
 </html>

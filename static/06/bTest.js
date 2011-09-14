@@ -14,8 +14,6 @@ function bTest(intervalRate, adaptive) {
   this.intervalRate = parseInt(intervalRate);
   this.adaptive = adaptive;
 
-  this.lastTimestamp = Date.now();
-  
   this.world = new b2World(
         new b2Vec2(0, 10)    //gravity
      ,  true                 //allow sleep
@@ -45,17 +43,15 @@ function bTest(intervalRate, adaptive) {
 }
 
 bTest.prototype.update = function() {
-  var now = Date.now();
+  var start = Date.now();
   var stepRate = (this.adaptive) ? (now - this.lastTimestamp) / 1000 : (1 / this.intervalRate);
-  this.lastTimestamp = now;
   this.world.Step(
          stepRate   //frame-rate
       ,  10       //velocity iterations
       ,  10       //position iterations
    );
    this.world.ClearForces();
-   var later = Date.now();
-   return later - now;
+   return (Date.now() - start);
 }
 
 bTest.prototype.getState = function() {
