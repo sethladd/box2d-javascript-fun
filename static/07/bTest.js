@@ -59,7 +59,7 @@ bTest.prototype.getState = function() {
   var state = {};
   for (var b = this.world.GetBodyList(); b; b = b.m_next) {
     if (b.IsActive() && typeof b.GetUserData() !== 'undefined' && b.GetUserData() != null) {
-        state[b.GetUserData()] = {x: b.GetPosition().x, y: b.GetPosition().y, a: b.GetAngle()};
+        state[b.GetUserData()] = {x: b.GetPosition().x, y: b.GetPosition().y, a: b.GetAngle(), c: {x: b.GetWorldCenter().x, y: b.GetWorldCenter().y}};
     }
   }
   return state;
