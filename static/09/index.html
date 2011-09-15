@@ -217,7 +217,9 @@ limitations under the License.
       {id: "chassis", x: 3.5, y: 4, halfHeight: 0.15, halfWidth: 2.5}
     ];
     
-    document.addEventListener("DOMContentLoaded", function() {
+    var running = true;
+    
+    function init() {
       for (var i = 0; i < initialState.length; i++) {
         world[initialState[i].id] = Entity.build(initialState[i]);
       }
@@ -226,14 +228,24 @@ limitations under the License.
       box.setBodies(world);
       box.addJoint("wheel1", "chassis");
       box.addJoint("wheel2", "chassis");
-
+      
+      running = true;
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      init();
+      
       (function loop(animStart) {
         update(animStart);
         draw();
-        requestAnimFrame(loop);
+        if (running) requestAnimFrame(loop);
       })();
-      
     }, false);
+    
+    setTimeout(function() {
+      running = false;
+      init();
+    }, 5000);
 
     </script>
   </body>
