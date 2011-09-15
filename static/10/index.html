@@ -17,7 +17,7 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Box2D Javascript Fun : 09 : Box2D with Joints and HTML5 Canvas</title>
+    <title>Box2D Javascript Fun : 09 : Box2D with Joints and Motors and HTML5 Canvas</title>
     <link rel="author" href="http://profiles.google.com/sethladd">
     <script src="../Box2D.js"></script>
     <script src="bTest.js"></script>
@@ -28,11 +28,11 @@ limitations under the License.
     </style>
   </head>
   <body>
-    <h1>Box2D with Joints and HTML5 Canvas</h1>
+    <h1>Box2D with Concave Shapes and HTML5 Canvas</h1>
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
     
     <p>
-      <a href="http://blog.sethladd.com/2011/09/box2d-and-joints-for-javascript.html">Read matching blog post for explanation</a>
+      <a href="http://blog.sethladd.com/2011/09/box2d-with-complex-and-concave-objects.html">Read matching blog post for explanation</a>
     </p>
     
     <p>
@@ -211,11 +211,13 @@ limitations under the License.
     }
     
     var initialState = [
-      {id: "ground", x: ctx.canvas.width / 2 / SCALE, y: ctx.canvas.height * 0.66 / SCALE, angle: (15*Math.PI)/180, halfHeight: 0.5, halfWidth: ctx.canvas.width / SCALE, color: 'yellow'},
+      {id: "ground", x: ctx.canvas.width / 2 / SCALE, y: ctx.canvas.height * 0.66 / SCALE, halfHeight: 0.5, halfWidth: ctx.canvas.width / SCALE, color: 'yellow'},
       {id: "wheel1", x: 1, y: 4, radius: 1.5},
       {id: "wheel2", x: 6, y: 4, radius: 0.5},
       {id: "chassis", x: 3.5, y: 4, halfHeight: 0.15, halfWidth: 2.5}
     ];
+    
+    var running = true;
     
     function init() {
       for (var i = 0; i < initialState.length; i++) {
@@ -224,12 +226,12 @@ limitations under the License.
       
       box = new bTest(60, false, canvasWidth, canvasHeight, SCALE);
       box.setBodies(world);
-      box.addJoint("wheel1", "chassis");
-      box.addJoint("wheel2", "chassis");
+      box.addRevoluteJoint("wheel1", "chassis", {motorSpeed: -2, maxMotorTorque: 10});
+      box.addRevoluteJoint("wheel2", "chassis");
       
       setTimeout(function() {
         init();
-      }, 5000);
+      }, 7000);
     }
     
     document.addEventListener("DOMContentLoaded", function() {
