@@ -32,7 +32,7 @@ limitations under the License.
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
     
     <p>
-      <a href="http://blog.sethladd.com/2011/09/box2d-with-complex-and-concave-objects.html">Read matching blog post for explanation</a>
+      <a href="http://blog.sethladd.com/2011/09/box2d-and-joints-for-javascript.html">Read matching blog post for explanation</a>
     </p>
     
     <p>
@@ -217,8 +217,6 @@ limitations under the License.
       {id: "chassis", x: 3.5, y: 4, halfHeight: 0.15, halfWidth: 2.5}
     ];
     
-    var running = true;
-    
     function init() {
       for (var i = 0; i < initialState.length; i++) {
         world[initialState[i].id] = Entity.build(initialState[i]);
@@ -229,10 +227,7 @@ limitations under the License.
       box.addJoint("wheel1", "chassis");
       box.addJoint("wheel2", "chassis");
       
-      running = true;
-      
       setTimeout(function() {
-        running = false;
         init();
       }, 5000);
     }
@@ -243,7 +238,7 @@ limitations under the License.
       (function loop(animStart) {
         update(animStart);
         draw();
-        if (running) requestAnimFrame(loop);
+        requestAnimFrame(loop);
       })();
     }, false);
 

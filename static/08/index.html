@@ -225,20 +225,27 @@ limitations under the License.
                         ], color: "green"}
     };
     
-    document.addEventListener("DOMContentLoaded", function() {
+    function init() {
       for (var i in initialState) {
         world[i] = Entity.build(initialState[i]);
       }
       
       box = new bTest(60, false, canvasWidth, canvasHeight, SCALE);
       box.setBodies(world);
-
+      
+      setTimeout(function() {
+        init();
+      }, 5000);
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      init();
+      
       (function loop(animStart) {
         update(animStart);
         draw();
         requestAnimFrame(loop);
       })();
-      
     }, false);
 
     </script>
