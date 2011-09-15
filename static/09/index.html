@@ -230,6 +230,11 @@ limitations under the License.
       box.addJoint("wheel2", "chassis");
       
       running = true;
+      
+      setTimeout(function() {
+        running = false;
+        init();
+      }, 5000);
     }
     
     document.addEventListener("DOMContentLoaded", function() {
@@ -241,11 +246,6 @@ limitations under the License.
         if (running) requestAnimFrame(loop);
       })();
     }, false);
-    
-    setTimeout(function() {
-      running = false;
-      init();
-    }, 5000);
 
     </script>
   </body>
