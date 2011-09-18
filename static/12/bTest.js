@@ -161,3 +161,7 @@ bTest.prototype.addContactListener = function(callbacks) {
     }
     this.world.SetContactListener(listener);
 }
+
+bTest.prototype.removeBody = function(id) {
+    this.world.DestroyBody(this.bodiesMap[id]);
+}

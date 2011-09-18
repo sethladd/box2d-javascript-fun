@@ -59,7 +59,7 @@ limitations under the License.
     var SCALE = 30;
     var NULL_CENTER = {x:null, y:null};
     
-    function Entity(id, x, y, angle, center, color) {
+    function Entity(id, x, y, angle, center, color, strength) {
       this.id = id;
       this.x = x;
       this.y = y;
@@ -67,10 +67,20 @@ limitations under the License.
       this.center = center;
       this.color = color || "red";
       this.isHit = false;
+      this.strength = strength;
+      this.dead = false;
     }
     
-    Entity.prototype.hit = function() {
+    Entity.prototype.hit = function(impulse, source) {
       this.isHit = true;
+      if (this.strength) {
+        this.strength -= impulse;
+        if (this.strength <= 0) {
+          this.dead = true
+        }
+      }
+      
+      //console.log(this.id + ", " + impulse + ", " + source.id + ", " + this.strength);
     }
     
     Entity.prototype.getColor = function() {
@@ -107,17 +117,17 @@ limitations under the License.
     
     Entity.build = function(def) {
       if (def.radius) {
-        return new CircleEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.radius);
+        return new CircleEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.strength, def.radius);
       } else if (def.polys) {
-        return new PolygonEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.polys);
+        return new PolygonEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.strength, def.polys);
       } else {
-        return new RectangleEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.halfWidth, def.halfHeight);
+        return new RectangleEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.strength, def.halfWidth, def.halfHeight);
       }
     }
     
-    function CircleEntity(id, x, y, angle, center, color, radius) {
+    function CircleEntity(id, x, y, angle, center, color, strength, radius) {
       color = color || 'aqua';
-      Entity.call(this, id, x, y, angle, center, color);
+      Entity.call(this, id, x, y, angle, center, color, strength);
       this.radius = radius;
     }
     CircleEntity.prototype = new Entity();
@@ -144,8 +154,8 @@ limitations under the License.
       Entity.prototype.draw.call(this, ctx);
     }
     
-    function RectangleEntity(id, x, y, angle, center, color, halfWidth, halfHeight) {
-      Entity.call(this, id, x, y, angle, center, color);
+    function RectangleEntity(id, x, y, angle, center, color, strength, halfWidth, halfHeight) {
+      Entity.call(this, id, x, y, angle, center, color, strength);
       this.halfWidth = halfWidth;
       this.halfHeight = halfHeight;
     }
@@ -167,8 +177,8 @@ limitations under the License.
       Entity.prototype.draw.call(this, ctx);
     }
     
-    function PolygonEntity(id, x, y, angle, center, color, polys) {
-      Entity.call(this, id, x, y, angle, center, color);
+    function PolygonEntity(id, x, y, angle, center, color, strength, polys) {
+      Entity.call(this, id, x, y, angle, center, color, strength);
       this.polys = polys;
     }
     PolygonEntity.prototype = new Entity();
@@ -207,9 +217,21 @@ limitations under the License.
       box.update();
       bodiesState = box.getState();
       
+      var graveyard = [];
+      
       for (var id in bodiesState) {
         var entity = world[id];
-        if (entity) entity.update(bodiesState[id]);
+        
+        if (entity && world[id].dead) {
+          box.removeBody(id);
+          graveyard.push(id);
+        } else if (entity) {
+          entity.update(bodiesState[id]);
+        }
+      }
+      
+      for (var i = 0; i < graveyard.length; i++) {
+        delete world[graveyard[i]];
       }
     }
     
@@ -230,8 +252,8 @@ limitations under the License.
     var initialState = [
       {id: "ground", x: ctx.canvas.width / 2 / SCALE, y: ctx.canvas.height / SCALE, halfHeight: 0.5, halfWidth: ctx.canvas.width / SCALE, color: 'yellow'},
       {id: "ball", x: 2, y: ctx.canvas.height / SCALE - 2, radius: 0.5},
-      {id: "b1", x:17, y: ctx.canvas.height / SCALE - 1, halfHeight: 2, halfWidth: 0.10},
-      {id: "b2", x:17, y: ctx.canvas.height / SCALE - 5, halfHeight: 0.25, halfWidth: 2}
+      {id: "b1", x:17, y: ctx.canvas.height / SCALE - 1, halfHeight: 2, halfWidth: 0.10, strength: 25},
+      {id: "b2", x:17, y: ctx.canvas.height / SCALE - 5, halfHeight: 0.25, halfWidth: 2, strength: 30}
     ];
     
     var running = true;
@@ -246,12 +268,14 @@ limitations under the License.
       
       box.addContactListener({
         BeginContact: function(idA, idB) {
-          world[idA].hit();
-          world[idB].hit();
         },
         
         PostSolve: function(idA, idB, impulse) {
-          
+          if (impulse < 0.1) return;
+          var entityA = world[idA];
+          var entityB = world[idB];
+          entityA.hit(impulse, entityB);
+          entityB.hit(impulse, entityA);
         }
       });
       
@@ -273,8 +297,6 @@ limitations under the License.
         requestAnimFrame(loop);
       })();
     }, false);
-    
-
 
     </script>
   </body>
