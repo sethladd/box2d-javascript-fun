@@ -268,9 +268,11 @@ limitations under the License.
       
       box.addContactListener({
         BeginContact: function(idA, idB) {
+          console.log('b');
         },
         
         PostSolve: function(idA, idB, impulse) {
+          //console.log('p');
           if (impulse < 0.1) return;
           var entityA = world[idA];
           var entityB = world[idB];
