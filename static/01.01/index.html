@@ -17,7 +17,7 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Box2D Javascript Fun : 00 : Most Basic Box2D Example</title>
+    <title>Box2D Javascript Fun : 01.1 : Simple Box2D Example with Iterations Controls</title>
     <link rel="author" href="http://profiles.google.com/sethladd">
     <script src="../Box2d.min.js"></script>
     <script src="../stats.js"></script>
@@ -32,6 +32,15 @@ limitations under the License.
   <body>
     
     <canvas id="c" width="640" height="480" style="border: 1px solid black"></canvas>
+    
+    <div>
+      <label>Velocity Iterations: <input type="range" min="1" max="10" value="8" id="velocity"></label><output id="velocity-output">8</output>
+    </div>
+    <div>
+      <label>Position Iterations: <input type="range" min="1" max="10" value="3" id="position"></label><output id="position-output">3</output>
+    </div>
+    
+    <h1>Simple Box2D Example with Iterations Controls</h1>
   
     <script>
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
@@ -46,11 +55,23 @@ limitations under the License.
                   };
     })();
     
+    function linkInputOutput(id) {
+        document.getElementById(id).addEventListener("change", function(e) {
+            var output = document.getElementById(id+'-output');
+            output.value = e.target.value;
+        });
+    }
+    
+    linkInputOutput("velocity");
+    linkInputOutput("position");
+    
     var stats = new Stats();
     document.body.appendChild(stats.domElement);
     
     var canvas = document.getElementById("c");
     var ctx = canvas.getContext("2d");
+    var velocityIteration = null;
+    var positionIteration = null;
   
     var world;
   
@@ -73,6 +94,8 @@ limitations under the License.
        );
        
        var SCALE = 30;
+       velocityIteration = parseInt(document.getElementById("velocity").value);
+       positionIteration = parseInt(document.getElementById("position").value);
      
        var fixDef = new b2FixtureDef;
        fixDef.density = 1.0;
@@ -86,33 +109,32 @@ limitations under the License.
        
        // positions the center of the object (not upper left!)
        bodyDef.position.x = canvas.width / 2 / SCALE;
-       bodyDef.position.y = (canvas.height / SCALE) - 1;
+       bodyDef.position.y = canvas.height / SCALE;
        
        fixDef.shape = new b2PolygonShape;
        
        // half width, half height. eg actual height here is 1 unit
-       fixDef.shape.SetAsBox((canvas.width / SCALE) / 2, 0.5 / 2);
+       fixDef.shape.SetAsBox((600 / SCALE) / 2, (10/SCALE) / 2);
        world.CreateBody(bodyDef).CreateFixture(fixDef);
      
-       //create dynamic circle object
+       //create some objects
        bodyDef.type = b2Body.b2_dynamicBody;
-       fixDef.shape = new b2CircleShape(
-          Math.random() + 0.1 //radius
-       );
-       bodyDef.position.x = Math.random() * 25;
-       bodyDef.position.y = Math.random() * 10;
-       world.CreateBody(bodyDef).CreateFixture(fixDef);
-       
-       // create dynamic polygon object
-       bodyDef.type = b2Body.b2_dynamicBody;
-       fixDef.shape = new b2PolygonShape;
-       fixDef.shape.SetAsBox(
-             Math.random() + 0.1 //half width
-          ,  Math.random() + 0.1 //half height
-       );
-       bodyDef.position.x = Math.random() * 25;
-       bodyDef.position.y = Math.random() * 10;
-       world.CreateBody(bodyDef).CreateFixture(fixDef);
+       for(var i = 0; i < 150; ++i) {
+          if(Math.random() > 0.5) {
+             fixDef.shape = new b2PolygonShape;
+             fixDef.shape.SetAsBox(
+                   Math.random() + 0.1 //half width
+                ,  Math.random() + 0.1 //half height
+             );
+          } else {
+             fixDef.shape = new b2CircleShape(
+                Math.random() + 0.1 //radius
+             );
+          }
+          bodyDef.position.x = Math.random() * 25;
+          bodyDef.position.y = Math.random() * 10;
+          world.CreateBody(bodyDef).CreateFixture(fixDef);
+       }
      
        //setup debug draw
        var debugDraw = new b2DebugDraw();
@@ -123,15 +145,14 @@ limitations under the License.
        debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
        world.SetDebugDraw(debugDraw);
      
-       // restart
        setTimeout(init, 6000);
     }; // init()
   
     function update() {
        world.Step(
              1 / 60   //frame-rate
-          ,  10       //velocity iterations
-          ,  10       //position iterations
+          ,  velocityIteration        //velocity iterations
+          ,  positionIteration       //position iterations
        );
        world.DrawDebugData();
        world.ClearForces();
@@ -144,7 +165,9 @@ limitations under the License.
     requestAnimFrame(update);
     
     </script>
-    
+    <p>
+      <a href="http://blog.sethladd.com/2011/09/box2d-javascript-example-walkthrough.html">Read matching blog post for explanation</a>
+    </p>
     <div class="g-plusone" data-size="small" data-annotation="inline"></div>
   </body>
 </html>
