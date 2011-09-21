@@ -39,6 +39,9 @@ limitations under the License.
     <div>
       <label>Position Iterations: <input type="range" min="1" max="10" value="3" id="position"></label><output id="position-output">3</output>
     </div>
+    <div>
+      <label>Time step: <input type="range" min="1" max="60" value="60" id="timestep"></label><output id="timestep-output">60</output>
+    </div>
     
     <h1>Simple Box2D Example with Iterations Controls</h1>
   
@@ -64,6 +67,7 @@ limitations under the License.
     
     linkInputOutput("velocity");
     linkInputOutput("position");
+    linkInputOutput("timestep");
     
     var stats = new Stats();
     document.body.appendChild(stats.domElement);
@@ -72,6 +76,7 @@ limitations under the License.
     var ctx = canvas.getContext("2d");
     var velocityIteration = null;
     var positionIteration = null;
+    var timestep = null;
   
     var world;
   
@@ -96,6 +101,7 @@ limitations under the License.
        var SCALE = 30;
        velocityIteration = parseInt(document.getElementById("velocity").value);
        positionIteration = parseInt(document.getElementById("position").value);
+       timestep = parseInt(document.getElementById("timestep").value);
      
        var fixDef = new b2FixtureDef;
        fixDef.density = 1.0;
@@ -150,7 +156,7 @@ limitations under the License.
   
     function update() {
        world.Step(
-             1 / 60   //frame-rate
+             1 / timestep   //frame-rate
           ,  velocityIteration        //velocity iterations
           ,  positionIteration       //position iterations
        );
