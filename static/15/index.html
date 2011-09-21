@@ -58,6 +58,27 @@ limitations under the License.
     var SCALE = 30;
     var NULL_CENTER = {x:null, y:null};
     
+    function PulleyJoint(entity1, entity2, anchor1, anchor2) {
+      this.entity1 = entity1;
+      this.entity2 = entity2;
+      this.anchor1 = anchor1;
+      this.anchor2 = anchor2;
+    }
+    
+    PulleyJoint.prototype.draw = function(ctx) {
+      this.drawLine(ctx, this.entity1, this.anchor1);
+      this.drawLine(ctx, this.entity2, this.anchor2);
+    }
+    
+    PulleyJoint.prototype.drawLine = function(ctx, entity, anchor) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'black';
+      ctx.moveTo(entity.x * SCALE, entity.y * SCALE);
+      ctx.lineTo(anchor.x * SCALE, anchor.y * SCALE);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    
     function Entity(id, x, y, angle, center, color) {
       this.id = id;
       this.x = x;
@@ -233,6 +254,7 @@ limitations under the License.
       box = new bTest(60, false, canvasWidth, canvasHeight, SCALE);
       box.setBodies(world);
       box.addPulleyJoint("box1", "box2", {x:5, y:1}, {x:7, y:1});
+      world['pulley'] = new PulleyJoint(world['box1'], world['box2'], {x:5, y:1}, {x:7, y:1});
       
       setTimeout(function() {
         init();
