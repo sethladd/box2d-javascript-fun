@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<!--
+Copyright 2011 Seth Ladd
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Box2D Javascript Fun : 12 : Box2D with Collision and Damage and HTML5 Canvas</title>
+    <link rel="author" href="http://profiles.google.com/sethladd">
+    <script src="../Box2D.js"></script>
+    <script src="bTest.js"></script>
+    <style>
+    body {
+      -webkit-transform: translateZ(0);
+    }
+    </style>
+  </head>
+  <body>
+    <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
+    
+    <h1>Box2D with Collision and Damage and HTML5 Canvas</h1>
+    
+    <p>
+      <a href="http://blog.sethladd.com/2011/09/box2d-impulse-and-javascript.html">Read matching blog post for explanation</a>
+    </p>
+    
+    <p>
+      Black dot is the position of the object, the yellow dot is the center of mass.
+    </p>
+    
+    <script async>
+    // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+    window.requestAnimFrame = (function(){
+          return  window.requestAnimationFrame       || 
+                  window.webkitRequestAnimationFrame || 
+                  window.mozRequestAnimationFrame    || 
+                  window.oRequestAnimationFrame      || 
+                  window.msRequestAnimationFrame     || 
+                  function(/* function */ callback, /* DOMElement */ element){
+                    window.setTimeout(callback, 1000 / 60);
+                  };
+    })();
+    </script>
+    
+    <script async>
+
+    var SCALE = 30;
+    var NULL_CENTER = {x:null, y:null};
+    
+    function Entity(id, x, y, angle, center, color, strength) {
+      this.id = id;
+      this.x = x;
+      this.y = y;
+      this.angle = angle || 0;
+      this.center = center;
+      this.color = color || "red";
+      this.isHit = false;
+      this.strength = strength;
+      this.dead = false;
+    }
+    
+    Entity.prototype.hit = function(impulse, source) {
+      this.isHit = true;
+      if (this.strength) {
+        this.strength -= impulse;
+        if (this.strength <= 0) {
+          this.dead = true
+        }
+      }
+      
+      //console.log(this.id + ", " + impulse + ", " + source.id + ", " + this.strength);
+    }
+    
+    Entity.prototype.getColor = function() {
+      if (this.isHit) {
+        return 'black';
+      } else {
+        return this.color;
+      }
+    }
+    
+    Entity.prototype.update = function(state) {
+      this.x = state.x;
+      this.y = state.y;
+      this.center = state.c;
+      this.angle = state.a;
+    }
+    
+    Entity.prototype.draw = function(ctx) {
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(this.x * SCALE, this.y * SCALE, 4, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillStyle = 'yellow';
+      ctx.beginPath();
+      ctx.arc(this.center.x * SCALE, this.center.y * SCALE, 2, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+      
+      // clear
+      this.isHit = false;
+    }
+    
+    Entity.build = function(def) {
+      if (def.radius) {
+        return new CircleEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.strength, def.radius);
+      } else if (def.polys) {
+        return new PolygonEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.strength, def.polys);
+      } else {
+        return new RectangleEntity(def.id, def.x, def.y, def.angle, NULL_CENTER, def.color, def.strength, def.halfWidth, def.halfHeight);
+      }
+    }
+    
+    function CircleEntity(id, x, y, angle, center, color, strength, radius) {
+      color = color || 'aqua';
+      Entity.call(this, id, x, y, angle, center, color, strength);
+      this.radius = radius;
+    }
+    CircleEntity.prototype = new Entity();
+    CircleEntity.prototype.constructor = CircleEntity;
+    
+    CircleEntity.prototype.draw = function(ctx) {
+      ctx.save();
+      ctx.translate(this.x * SCALE, this.y * SCALE);
+      ctx.rotate(this.angle);
+      ctx.translate(-(this.x) * SCALE, -(this.y) * SCALE);
+      
+      ctx.fillStyle = this.getColor();
+      ctx.strokeStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(this.x * SCALE, this.y * SCALE, this.radius * SCALE, 0, Math.PI * 2, true);
+      ctx.moveTo(this.x * SCALE, this.y * SCALE);
+      ctx.lineTo((this.x) * SCALE, (this.y + this.radius) * SCALE);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      
+      ctx.restore();
+      
+      Entity.prototype.draw.call(this, ctx);
+    }
+    
+    function RectangleEntity(id, x, y, angle, center, color, strength, halfWidth, halfHeight) {
+      Entity.call(this, id, x, y, angle, center, color, strength);
+      this.halfWidth = halfWidth;
+      this.halfHeight = halfHeight;
+    }
+    RectangleEntity.prototype = new Entity();
+    RectangleEntity.prototype.constructor = RectangleEntity;
+    
+    RectangleEntity.prototype.draw = function(ctx) {
+      ctx.save();
+      ctx.translate(this.x * SCALE, this.y * SCALE);
+      ctx.rotate(this.angle);
+      ctx.translate(-(this.x) * SCALE, -(this.y) * SCALE);
+      ctx.fillStyle = this.getColor();
+      ctx.fillRect((this.x-this.halfWidth) * SCALE,
+                   (this.y-this.halfHeight) * SCALE,
+                   (this.halfWidth*2) * SCALE,
+                   (this.halfHeight*2) * SCALE);
+      ctx.restore();
+      
+      Entity.prototype.draw.call(this, ctx);
+    }
+    
+    function PolygonEntity(id, x, y, angle, center, color, strength, polys) {
+      Entity.call(this, id, x, y, angle, center, color, strength);
+      this.polys = polys;
+    }
+    PolygonEntity.prototype = new Entity();
+    PolygonEntity.prototype.constructor = PolygonEntity;
+    
+    PolygonEntity.prototype.draw = function(ctx) {
+      ctx.save();
+      ctx.translate(this.x * SCALE, this.y * SCALE);
+      ctx.rotate(this.angle);
+      ctx.translate(-(this.x) * SCALE, -(this.y) * SCALE);
+      ctx.fillStyle = this.getColor();
+
+      for (var i = 0; i < this.polys.length; i++) {
+        var points = this.polys[i];
+        ctx.beginPath();
+        ctx.moveTo((this.x + points[0].x) * SCALE, (this.y + points[0].y) * SCALE);
+        for (var j = 1; j < points.length; j++) {
+           ctx.lineTo((points[j].x + this.x) * SCALE, (points[j].y + this.y) * SCALE);
+        }
+        ctx.lineTo((this.x + points[0].x) * SCALE, (this.y + points[0].y) * SCALE);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      ctx.restore();
+      
+      Entity.prototype.draw.call(this, ctx);
+    }
+    
+    var world = {};
+    var bodiesState = null;
+    var box = null;
+    
+    function update(animStart) {
+      box.update();
+      bodiesState = box.getState();
+      
+      var graveyard = [];
+      
+      for (var id in bodiesState) {
+        var entity = world[id];
+        
+        if (entity && world[id].dead) {
+          box.removeBody(id);
+          graveyard.push(id);
+        } else if (entity) {
+          entity.update(bodiesState[id]);
+        }
+      }
+      
+      for (var i = 0; i < graveyard.length; i++) {
+        delete world[graveyard[i]];
+      }
+    }
+    
+    var ctx = document.getElementById("c0").getContext("2d");
+    var canvasWidth = ctx.canvas.width;
+    var canvasHeight = ctx.canvas.height;
+    
+    function draw() {
+      //console.log("d");
+      
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      for (var id in world) {
+        var entity = world[id];
+        entity.draw(ctx);
+      }
+    }
+    
+    var initialState = [
+      {id: "ground", x: ctx.canvas.width / 2 / SCALE, y: ctx.canvas.height / SCALE, halfHeight: 0.5, halfWidth: ctx.canvas.width / SCALE, color: 'yellow'},
+      {id: "ball", x: 2, y: ctx.canvas.height / SCALE - 2, radius: 0.5},
+      {id: "b1", x:17, y: ctx.canvas.height / SCALE - 1, halfHeight: 2, halfWidth: 0.10, strength: 25},
+      {id: "b2", x:17, y: ctx.canvas.height / SCALE - 5, halfHeight: 0.25, halfWidth: 2, strength: 30}
+    ];
+    
+    var running = true;
+    
+    function init() {
+      for (var i = 0; i < initialState.length; i++) {
+        world[initialState[i].id] = Entity.build(initialState[i]);
+      }
+      
+      box = new bTest(60, false, canvasWidth, canvasHeight, SCALE);
+      box.setBodies(world);
+      
+      box.addContactListener({
+        BeginContact: function(idA, idB) {
+          console.log('b');
+        },
+        
+        PostSolve: function(idA, idB, impulse) {
+          //console.log('p');
+          if (impulse < 0.1) return;
+          var entityA = world[idA];
+          var entityB = world[idB];
+          entityA.hit(impulse, entityB);
+          entityB.hit(impulse, entityA);
+        }
+      });
+      
+      setTimeout(function() {
+        box.applyImpulse("ball", 70, 35);
+      }, 1000);
+      
+      setTimeout(function() {
+        init();
+      }, 10000);
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      init();
+      
+      (function loop(animStart) {
+        update(animStart);
+        draw();
+        requestAnimFrame(loop);
+      })();
+    }, false);
+
+    </script>
+  </body>
+</html>
