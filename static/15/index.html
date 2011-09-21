@@ -263,11 +263,11 @@ limitations under the License.
     canvas.addEventListener("mousedown", function(e) {
        isMouseDown = true;
        handleMouseMove(e);
-       canvas.addEventListener("mousemove", handleMouseMove, true);
+       document.addEventListener("mousemove", handleMouseMove, true);
     }, true);
     
     canvas.addEventListener("mouseup", function() {
-       canvas.removeEventListener("mousemove", handleMouseMove, true);
+       document.removeEventListener("mousemove", handleMouseMove, true);
        isMouseDown = false;
        mouseX = undefined;
        mouseY = undefined;
