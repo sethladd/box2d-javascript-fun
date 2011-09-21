@@ -42,7 +42,8 @@ limitations under the License.
       <button id="undo-rect">Undo Rect</button>
       <button id="redo-rect" disabled>Redo Rect</button>
       <button id="copy-rect" disabled>Copy</button>
-      <button id="save">Save</button>
+      <button id="save-world">Save</button>
+      <button id="delete-world">Delete World</button>
     </div>
     
     <p>
@@ -313,7 +314,7 @@ limitations under the License.
       }
     }
     
-    var initialState = {
+    var defaultInitialState = initialState = {
       "ground": {id: "ground", x: canvasWidth / 2 / SCALE, y: canvasHeight/ SCALE, halfHeight: 0.5, halfWidth: canvasWidth / SCALE, color: 'yellow'}
     };
     
@@ -400,7 +401,7 @@ limitations under the License.
       addedRectangles.push(copy);
     });
     
-    document.getElementById("save").addEventListener("click", function(e) {
+    document.getElementById("save-world").addEventListener("click", function(e) {
       var select = document.getElementById("saved-worlds");
       var key = Date.now();
       localStorage[key] = JSON.stringify(world);
@@ -412,8 +413,17 @@ limitations under the License.
       init();
     });
     
+    document.getElementById("delete-world").addEventListener("click", function(e) {
+      var select = document.getElementById("saved-worlds");
+      localStorage.removeItem(select.value);
+      loadSavedWorlds();
+      initialState = defaultInitialState;
+      init();
+    });
+    
     function loadSavedWorlds() {
       var select = document.getElementById("saved-worlds");
+      select.innerHTML = '';
       for (var k in localStorage) {
         select.appendChild(new Option(k));
       }
