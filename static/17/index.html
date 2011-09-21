@@ -249,11 +249,17 @@ limitations under the License.
           // resize
           newRectangle.setHalfDimensions(Math.abs((mouseX - newRectangle.x) / 2), Math.abs((mouseY - newRectangle.y) / 2));
         } else if (!isMouseDown && newRectangle) {
-          // commit new rectangle to world
-          newRectangle.born = true;
-          box.addBody(newRectangle);
-          addedRectangles.push(newRectangle);
-          newRectangle = null;
+          if (newRectangle.halfWidth < 0.1 || newRectangle.halfHeight < 0.1) {
+            delete world[newRectangle.id];
+            newRectangle = null;
+          } else {
+            // commit new rectangle to world
+            newRectangle.born = true;
+            box.addBody(newRectangle);
+            addedRectangles.push(newRectangle);
+            newRectangle = null;
+          }
+
         }
       }
       
