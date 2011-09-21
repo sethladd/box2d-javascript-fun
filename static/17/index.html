@@ -37,7 +37,7 @@ limitations under the License.
     
     <div>
       <button id="undo-rect">Undo Rect</button>
-      <button id="redo-rect">Redo Rect</button>
+      <button id="redo-rect" disabled>Redo Rect</button>
     </div>
     
     <p>
@@ -337,10 +337,13 @@ limitations under the License.
     }, false);
     
     document.getElementById("undo-rect").addEventListener("click", function(e) {
+      if (addedRectangles.length == 0) return;
       var undid = addedRectangles.pop();
       removedRectangles.push(undid);
       delete world[undid.id];
       box.removeBody(undid.id);
+      document.getElementById("redo-rect").disabled = false;
+      if (addedRectangles.length == 0) e.target.disabled = true;
     });
     
     document.getElementById("redo-rect").addEventListener("click", function(e) {
@@ -349,6 +352,8 @@ limitations under the License.
       addedRectangles.push(redid);
       world[redid.id] = redid;
       box.addBody(redid);
+      document.getElementById("undo-rect").disabled = false;
+      if (removedRectangles.length == 0) e.target.disabled = true;
     })
 
     </script>
