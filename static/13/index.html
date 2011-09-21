@@ -33,16 +33,6 @@ limitations under the License.
     <div>Damping Ratio (0 for ignore): <input type="range" min="0" max="1" id="damping-ratio" value="0" step="0.1"><output id="damping-ratio-output">0</output></div>
     <div>Frequency Hz (0 for ignore): <input type="range" min="0" max="30" id="frequency-hz" value="0"><output id="frequency-hz-output">0</output></div>
     
-    <script>
-    function linkRangeToOutput(id) {
-      document.getElementById(id).addEventListener('change', function(e) {
-        document.getElementById(id+'-output').value = e.target.value;
-      });
-    }
-    linkRangeToOutput('damping-ratio');
-    linkRangeToOutput('frequency-hz');
-    </script>
-    
     <h1>Box2D with Distance Joints and HTML5 Canvas</h1>
     
     <p>
@@ -53,7 +43,17 @@ limitations under the License.
       Black dot is the position of the object, the yellow dot is the center of mass.
     </p>
     
-    <script async>
+    <script>
+    function linkRangeToOutput(id) {
+      document.getElementById(id).addEventListener('change', function(e) {
+        document.getElementById(id+'-output').value = e.target.value;
+      });
+    }
+    linkRangeToOutput('damping-ratio');
+    linkRangeToOutput('frequency-hz');
+    </script>
+    
+    <script>
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
     window.requestAnimFrame = (function(){
           return  window.requestAnimationFrame       || 
@@ -227,6 +227,12 @@ limitations under the License.
     var box = null;
     
     function update(animStart) {
+      if (isMouseDown) {
+        box.mouseDownAt(mouseX, mouseY);
+      } else if (box.isMouseDown()) {
+        box.mouseUp();
+      }
+
       box.update();
       bodiesState = box.getState();
       
@@ -248,7 +254,8 @@ limitations under the License.
       }
     }
     
-    var ctx = document.getElementById("c0").getContext("2d");
+    var canvas = document.getElementById("c0");
+    var ctx = canvas.getContext("2d");
     var canvasWidth = ctx.canvas.width;
     var canvasHeight = ctx.canvas.height;
     
@@ -290,6 +297,30 @@ limitations under the License.
         init();
       }, 5000);
     }
+    
+    /* ---- INPUT ----------------------------- */
+    var mouseX, mouseY, isMouseDown;
+    
+    canvas.addEventListener("mousedown", function(e) {
+       isMouseDown = true;
+       handleMouseMove(e);
+       document.addEventListener("mousemove", handleMouseMove, true);
+    }, true);
+    
+    canvas.addEventListener("mouseup", function() {
+      if (!isMouseDown) return;
+       document.removeEventListener("mousemove", handleMouseMove, true);
+       isMouseDown = false;
+       mouseX = undefined;
+       mouseY = undefined;
+    }, true);
+    
+    function handleMouseMove(e) {
+       mouseX = (e.clientX - canvas.getBoundingClientRect().left) / SCALE;
+       mouseY = (e.clientY - canvas.getBoundingClientRect().top) / SCALE;
+    };
+    
+    /* ------------------------------------------ */
     
     document.addEventListener("DOMContentLoaded", function() {
       init();

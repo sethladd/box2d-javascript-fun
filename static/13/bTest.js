@@ -1,4 +1,5 @@
 var   b2Vec2 = Box2D.Common.Math.b2Vec2
+, b2AABB = Box2D.Collision.b2AABB
  , b2BodyDef = Box2D.Dynamics.b2BodyDef
  , b2Body = Box2D.Dynamics.b2Body
  , b2FixtureDef = Box2D.Dynamics.b2FixtureDef
@@ -10,6 +11,7 @@ var   b2Vec2 = Box2D.Common.Math.b2Vec2
  , b2DebugDraw = Box2D.Dynamics.b2DebugDraw
  , b2RevoluteJointDef = Box2D.Dynamics.Joints.b2RevoluteJointDef
  , b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef
+ , b2MouseJointDef =  Box2D.Dynamics.Joints.b2MouseJointDef
    ;
 
 function bTest(intervalRate, adaptive, width, height, scale) {
@@ -175,4 +177,52 @@ bTest.prototype.addContactListener = function(callbacks) {
 
 bTest.prototype.removeBody = function(id) {
     this.world.DestroyBody(this.bodiesMap[id]);
+}
+
+bTest.prototype.mouseDownAt = function(x, y) {
+  if (!this.mouseJoint) {
+     var body = this.getBodyAt(x, y);
+     if (body) {
+        var md = new b2MouseJointDef();
+        md.bodyA = this.world.GetGroundBody();
+        md.bodyB = body;
+        md.target.Set(x, y);
+        md.collideConnected = true;
+        md.maxForce = 300.0 * body.GetMass();
+        this.mouseJoint = this.world.CreateJoint(md);
+        body.SetAwake(true);
+     }
+  } else {
+      this.mouseJoint.SetTarget(new b2Vec2(x, y));
+  }
+}
+
+bTest.prototype.isMouseDown = function() {
+  return (this.mouseJoint != null);
+}
+
+bTest.prototype.mouseUp = function() {
+  this.world.DestroyJoint(this.mouseJoint);
+  this.mouseJoint = null;
+}
+
+bTest.prototype.getBodyAt = function(x, y) {
+   var mousePVec = new b2Vec2(x, y);
+   var aabb = new b2AABB();
+   aabb.lowerBound.Set(x - 0.001, y - 0.001);
+   aabb.upperBound.Set(x + 0.001, y + 0.001);
+   
+   // Query the world for overlapping shapes.
+
+   var selectedBody = null;
+   this.world.QueryAABB(function(fixture) {
+     if(fixture.GetBody().GetType() != b2Body.b2_staticBody) {
+        if(fixture.GetShape().TestPoint(fixture.GetBody().GetTransform(), mousePVec)) {
+           selectedBody = fixture.GetBody();
+           return false;
+        }
+     }
+     return true;
+   }, aabb);
+   return selectedBody;
 }
