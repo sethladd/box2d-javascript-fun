@@ -31,6 +31,9 @@ limitations under the License.
     <h1>Box2D with Drawing Boxes and HTML5 Canvas</h1>
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
     
+    <select multiple id="saved-worlds">
+    </select>
+    
     <div>
       Draw: <label><input type="radio" name="draw" id="draw-on" value="1">On</label> <label><input type="radio" name="draw" id="draw-off" value="0">Off</label>
     </div>
@@ -39,6 +42,7 @@ limitations under the License.
       <button id="undo-rect">Undo Rect</button>
       <button id="redo-rect" disabled>Redo Rect</button>
       <button id="copy-rect" disabled>Copy</button>
+      <button id="save">Save</button>
     </div>
     
     <p>
@@ -309,9 +313,9 @@ limitations under the License.
       }
     }
     
-    var initialState = [
-      {id: "ground", x: canvasWidth / 2 / SCALE, y: canvasHeight/ SCALE, halfHeight: 0.5, halfWidth: canvasWidth / SCALE, color: 'yellow'}
-    ];
+    var initialState = {
+      "ground": {id: "ground", x: canvasWidth / 2 / SCALE, y: canvasHeight/ SCALE, halfHeight: 0.5, halfWidth: canvasWidth / SCALE, color: 'yellow'}
+    };
     
     var running = true;
     
@@ -319,7 +323,7 @@ limitations under the License.
       world = {};
       addedRectangles = [];
       removedRectangles = [];
-      for (var i = 0; i < initialState.length; i++) {
+      for (var i in initialState) {
         world[initialState[i].id] = Entity.build(initialState[i]);
       }
       
@@ -358,6 +362,8 @@ limitations under the License.
     document.addEventListener("DOMContentLoaded", function() {
       init();
       
+      loadSavedWorlds();
+      
       (function loop(animStart) {
         update(animStart);
         draw();
@@ -393,6 +399,25 @@ limitations under the License.
       box.addBody(copy);
       addedRectangles.push(copy);
     });
+    
+    document.getElementById("save").addEventListener("click", function(e) {
+      var select = document.getElementById("saved-worlds");
+      var key = Date.now();
+      localStorage[key] = JSON.stringify(world);
+      select.appendChild(new Option(key));
+    });
+    
+    document.getElementById("saved-worlds").addEventListener("click", function(e) {
+      initialState = JSON.parse(localStorage[e.target.value]);
+      init();
+    });
+    
+    function loadSavedWorlds() {
+      var select = document.getElementById("saved-worlds");
+      for (var k in localStorage) {
+        select.appendChild(new Option(k));
+      }
+    }
 
     </script>
   </body>
