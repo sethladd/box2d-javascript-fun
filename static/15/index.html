@@ -17,7 +17,7 @@ limitations under the License.
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Box2D Javascript Fun : 14 : Box2D with Mouse Joints and HTML5 Canvas</title>
+    <title>Box2D Javascript Fun : 15 : Box2D with Pulley Joints and HTML5 Canvas</title>
     <link rel="author" href="http://profiles.google.com/sethladd">
     <script src="../Box2D.js"></script>
     <script src="bTest.js"></script>
@@ -28,7 +28,7 @@ limitations under the License.
     </style>
   </head>
   <body>
-    <h1>Box2D with Mouse Joint and HTML5 Canvas</h1>
+    <h1>Box2D with Pulley Joint and HTML5 Canvas</h1>
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
     
     <p>
@@ -218,10 +218,9 @@ limitations under the License.
     }
     
     var initialState = [
-      {id: "ground", x: canvasWidth / 2 / SCALE, y: canvasHeight * 0.66 / SCALE, halfHeight: 0.5, halfWidth: canvasWidth / SCALE, color: 'yellow'},
-      {id: "wheel1", x: 1, y: 4, radius: 1.5},
-      {id: "wheel2", x: 6, y: 4, radius: 0.5},
-      {id: "chassis", x: 3.5, y: 4, halfHeight: 0.15, halfWidth: 2.5}
+      {id: "ground", x: canvasWidth / 2 / SCALE, y: canvasHeight/ SCALE, halfHeight: 0.5, halfWidth: canvasWidth / SCALE, color: 'yellow'},
+      {id: "box1", x: 5, y: 6, halfHeight: 1, halfWidth: 1},
+      {id: "box2", x: 7, y: 6, halfHeight: 0.5, halfWidth: 0.5}
     ];
     
     var running = true;
@@ -233,8 +232,7 @@ limitations under the License.
       
       box = new bTest(60, false, canvasWidth, canvasHeight, SCALE);
       box.setBodies(world);
-      box.addRevoluteJoint("wheel1", "chassis", {motorSpeed: -2, maxMotorTorque: 10});
-      box.addRevoluteJoint("wheel2", "chassis");
+      box.addPulleyJoint("box1", "box2", {x:5, y:1}, {x:7, y:1});
       
       setTimeout(function() {
         init();
