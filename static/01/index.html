@@ -119,7 +119,7 @@ limitations under the License.
        debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
        world.SetDebugDraw(debugDraw);
      
-       requestAnimFrame(update);
+       setTimeout(init, 6000);
     }; // init()
   
     function update() {
@@ -136,6 +136,8 @@ limitations under the License.
     }; // update()
   
     init();
+    requestAnimFrame(update);
+    
     </script>
     <p>
       <a href="http://blog.sethladd.com/2011/09/box2d-javascript-example-walkthrough.html">Read matching blog post for explanation</a>
