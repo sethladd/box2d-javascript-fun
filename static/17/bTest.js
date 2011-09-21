@@ -208,3 +208,12 @@ bTest.prototype.getBodyAt = function(x, y) {
    }, aabb);
    return selectedBody;
 }
+
+bTest.prototype.getBodyIdAt = function(x, y) {
+  var body = this.getBodyAt(x, y);
+  if (body) {
+    return body.GetUserData();
+  } else {
+    return null;
+  }
+}
