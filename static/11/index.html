@@ -31,10 +31,13 @@ limitations under the License.
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
     
     <div>
-      <label>Power: <input type="range" min="1" max="200" id="power" value="30"></label><output id="power-output">30</output>
+      <label>Power: <input type="range" min="1" max="60" id="power" value="30"></label><output id="power-output">30</output>
     </div>
     <div>
       <label>Angle: <input type="range" min="0" max="90" id="angle" value="70"></label><output id="angle-output">70</output>
+    </div>
+    <div>
+      <button id="restart">Restart</button>
     </div>
     
     <h1>Box2D with Impulse and HTML5 Canvas</h1>
@@ -239,6 +242,8 @@ limitations under the License.
     ];
     
     var running = true;
+    var impulseTimeout = null;
+    var initTimeout = null;
     
     function init() {
       for (var i = 0; i < initialState.length; i++) {
@@ -248,26 +253,36 @@ limitations under the License.
       box = new bTest(60, false, canvasWidth, canvasHeight, SCALE);
       box.setBodies(world);
       
-      setTimeout(function() {
+      impulseTimeout = setTimeout(function() {
         box.applyImpulse("ball", parseInt(angleElem.value), parseInt(powerElem.value));
       }, 1000);
       
-      setTimeout(function() {
+      impulseTimeout = setTimeout(function() {
         init();
       }, 10000);
     }
+    
+    var restart = false;
     
     document.addEventListener("DOMContentLoaded", function() {
       init();
       
       (function loop(animStart) {
+        if (restart) {
+          clearTimeout(impulseTimeout);
+          clearTimeout(initTimeout);
+          init();
+          restart = false;
+        }
         update(animStart);
         draw();
         requestAnimFrame(loop);
       })();
     }, false);
     
-
+    document.getElementById("restart").addEventListener("click", function(e) {
+      restart = true;
+    });
 
     </script>
   </body>
