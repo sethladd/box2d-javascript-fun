@@ -30,6 +30,13 @@ limitations under the License.
   <body>
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
     
+    <div>
+      <label>Power: <input type="range" min="1" max="200" id="power" value="30"></label><output id="power-output">30</output>
+    </div>
+    <div>
+      <label>Angle: <input type="range" min="0" max="90" id="angle" value="70"></label><output id="angle-output">70</output>
+    </div>
+    
     <h1>Box2D with Impulse and HTML5 Canvas</h1>
     
     <p>
@@ -40,7 +47,7 @@ limitations under the License.
       Black dot is the position of the object, the yellow dot is the center of mass.
     </p>
     
-    <script async>
+    <script>
     // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
     window.requestAnimFrame = (function(){
           return  window.requestAnimationFrame       || 
@@ -54,8 +61,21 @@ limitations under the License.
     })();
     </script>
     
-    <script async>
+    <script>
+    function linkRangeToOutput(id) {
+      document.getElementById(id).addEventListener('change', function(e) {
+        document.getElementById(id+'-output').value = e.target.value;
+      });
+    }
+    linkRangeToOutput('power');
+    linkRangeToOutput('angle');
+    </script>
+    
+    <script>
 
+    var powerElem = document.getElementById('power');
+    var angleElem = document.getElementById('angle');
+    
     var SCALE = 30;
     var NULL_CENTER = {x:null, y:null};
     
@@ -229,7 +249,7 @@ limitations under the License.
       box.setBodies(world);
       
       setTimeout(function() {
-        box.applyImpulse("ball", 70, 35);
+        box.applyImpulse("ball", parseInt(angleElem.value), parseInt(powerElem.value));
       }, 1000);
       
       setTimeout(function() {
