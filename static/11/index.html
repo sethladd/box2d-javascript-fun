@@ -31,10 +31,13 @@ limitations under the License.
     <canvas id="c0" width="640" height="480" style="border: 1px solid black"></canvas>
     
     <div>
-      <label>Power: <input type="range" min="1" max="60" id="power" value="30"></label><output id="power-output">30</output>
+      <label>Power: <input type="range" min="1" max="100" id="power" value="30"></label><output id="power-output">30</output>
     </div>
     <div>
       <label>Angle: <input type="range" min="0" max="90" id="angle" value="70"></label><output id="angle-output">70</output>
+    </div>
+    <div>
+      <label>Bullet? <input type="checkbox" id="bullet"></label>
     </div>
     <div>
       <button id="restart">Restart</button>
@@ -78,6 +81,7 @@ limitations under the License.
 
     var powerElem = document.getElementById('power');
     var angleElem = document.getElementById('angle');
+    var bulletElem = document.getElementById('bullet');
     
     var SCALE = 30;
     var NULL_CENTER = {x:null, y:null};
@@ -251,7 +255,7 @@ limitations under the License.
       }
       
       box = new bTest(60, false, canvasWidth, canvasHeight, SCALE);
-      box.setBodies(world);
+      box.setBodies(world, bulletElem.checked);
       
       impulseTimeout = setTimeout(function() {
         box.applyImpulse("ball", parseInt(angleElem.value), parseInt(powerElem.value));

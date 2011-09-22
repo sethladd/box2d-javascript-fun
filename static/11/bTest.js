@@ -75,7 +75,7 @@ bTest.prototype.getBodySpec = function(b) {
     return {x: b.GetPosition().x, y: b.GetPosition().y, a: b.GetAngle(), c: {x: b.GetWorldCenter().x, y: b.GetWorldCenter().y}};
 }
 
-bTest.prototype.setBodies = function(bodyEntities) {
+bTest.prototype.setBodies = function(bodyEntities, enableBullet) {
     var bodyDef = new b2BodyDef;
     
     for(var id in bodyEntities) {
@@ -91,6 +91,7 @@ bTest.prototype.setBodies = function(bodyEntities) {
         bodyDef.position.y = entity.y;
         bodyDef.userData = entity.id;
         bodyDef.angle = entity.angle;
+        if (enableBullet && entity.radius) bodyDef.bullet = true;
         var body = this.registerBody(bodyDef);
         
         if (entity.radius) {
